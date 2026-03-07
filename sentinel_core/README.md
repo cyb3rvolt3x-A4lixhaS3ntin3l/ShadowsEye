@@ -1,445 +1,375 @@
-# 🛡️ SENTINEL CORE - ELITE OSINT & PENTESTING PLATFORM
+# SENTINEL CORE
 
-**Developed by:** Syed Abrar (Alias: Cyb3rvolt3x)  
-**Organization:** [SentinelReign.com](https://sentinelreign.com)  
-**Classification:** ELITE TIER - For Intelligence Agencies, Military & Ethical Hackers  
-**AI Powered:** NVIDIA NIM + Moonshot AI Kimi K2.5 Integration  
+### Elite OSINT & Penetration Testing Intelligence Platform
 
----
+**Developed by:** Syed Abrar *(Alias: Cyb3rvolt3x)*  
+**Organization:** SentinelReign.com  
+**Age of Development:** 18 Years Old | NDA Aspirant  
 
-## 🎯 OVERVIEW
-
-Sentinel Core is a **production-grade, modular OSINT and penetration testing platform** designed for:
-- **RAW / MOSSAD / IB / CIA / NSA** Intelligence Operations
-- **Military Cyber Commands** (USCYBERCOM, IDF, GCHQ, etc.)
-- **Elite Bug Bounty Hunters** & Penetration Testers
-- **SOC Teams** & Incident Responders
-- **Threat Intelligence Analysts**
-- **Red Team Operators** & Adversarial Simulation
-
-This is the **premier choice** for nation-state level reconnaissance, automated penetration testing workflows, threat intelligence fusion, and AI-assisted security operations with agentic automation capabilities.
-
-### 🌟 NEW: Kimi Moonshot AI Integration
-Powered by **NVIDIA NIM** and **Moonshot AI Kimi K2.5**, Sentinel Core now features:
-- **8 Elite AI Roles**: Ethical Hacker, Incident Responder, OSINT Specialist, Report Engineer, Red Teamer, Threat Hunter, Cloud Security, AppSec
-- **Custom Role Creation**: Define your own specialist personas for IB, MOSSAD, RAW tactics
-- **Agentic Capabilities**: AI can suggest and execute tools with user confirmation
-- **Context-Aware Analysis**: Automatic scan result integration when you click
-- **Memory System**: Conversation history and long-term memory for continuity
-- **Streaming Support**: Real-time responses with thinking mode enabled
-- **Automatic Fallback**: Works locally without API key (provides basic suggestions)
+Classification: **Elite Intelligence-Grade Security Platform**
 
 ---
 
-## ⚡ KEY FEATURES
+## Overview
 
-### 🔥 8 Built-in OSINT Modules
-| Module | Description | API Key Required |
-|--------|-------------|------------------|
-| **DNS** | Comprehensive DNS enumeration with subdomain discovery | ❌ |
-| **WHOIS** | Domain registration & ownership intelligence | ❌ |
-| **SSL/TLS** | Certificate analysis & CT log correlation | ❌ |
-| **CRTSH** | Subdomain discovery via Certificate Transparency | ❌ |
-| **Shodan** | IoT device & service discovery | ✅ SHODAN_API_KEY |
-| **VirusTotal** | Malware & URL reputation analysis | ✅ VIRUSTOTAL_API_KEY |
-| **Wayback Machine** | Historical website archives | ❌ |
-| **Hunter.io** | Professional email address discovery | ✅ HUNTER_API_KEY |
+**Sentinel Core** is an advanced modular **OSINT, threat intelligence, and penetration testing platform** designed to assist security professionals in performing structured reconnaissance, infrastructure intelligence analysis, vulnerability discovery, and automated reporting.
 
-### 🛠️ 20+ Integrated Kali/Parrot Tools
-Auto-detected and integrated:
-- **Recon:** `amass`, `subfinder`, `assetfinder`, `theHarvester`, `sherlock`, `maigret`
-- **Web:** `httpx`, `whatweb`, `wafw00f`, `gobuster`, `ffuf`
-- **Vuln:** `nuclei`, `searchsploit`, `sqlmap`
-- **Network:** `nmap`, `naabu`
-- **Post-Exploit:** `exiftool`, `binwalk`, `jwt-tool`
+The platform integrates **open-source intelligence techniques, security automation workflows, AI-assisted analysis (NVIDIA Kimi K2.5), and Kali Linux toolchains** into a unified operational environment.
 
-### 🧠 Elite Automation Tactics
+Sentinel Core is designed for use by:
 
-#### Kevin Mitnick's Social Engineering Recon
-```python
-# Auto-chain: Domain → Emails → Social Profiles → Password Breaches
-target = "company.com"
-1. Hunter.io → Employee emails
-2. theHarvester → Additional emails & subdomains
-3. Sherlock/Maigret → Social media profiles
-4. DeHashed/HaveIBeenPwned → Credential leaks
-```
+* Security Researchers
+* Ethical Hackers
+* Penetration Testers
+* Bug Bounty Hunters
+* Incident Responders
+* Threat Intelligence Analysts
+* Security Operations Centers (SOC)
+* Cyber Defense Teams
+* Digital Forensics Professionals
+* Intelligence Agencies (Modeled after IB, RAW, Mossad tactics)
 
-#### RAW/MOSSAD Infrastructure Mapping
-```python
-# Complete infrastructure fingerprinting
-target = "target.gov"
-1. Amass (aggressive mode) → All subdomains
-2. DNS enumeration → Record types (A, AAAA, MX, TXT, SPF, DMARC)
-3. Shodan → Open ports, services, vulnerabilities
-4. SSL analysis → Certificate chains, SANs
-5. Nmap → Detailed port scanning
-6. WhatWeb → Technology stack
-7. Nuclei → Vulnerability detection
-```
+The platform focuses on **efficient intelligence gathering, automated workflows, graph-based correlation, AI-driven agentic capabilities, and professional reporting.**
 
-#### Top Bug Bounty Hunter Workflow
-```python
-# Automated bug hunting chain
-target = "*.example.com"
-1. Subdomain brute-forcing (Amass + Subfinder + Assetfinder)
-2. HTTP probing (httpx) → Live hosts
-3. Screenshot capture → Visual recon
-4. Technology detection (WhatWeb)
-5. Vulnerability scanning (Nuclei templates)
-6. Parameter fuzzing (FFUF)
-7. Report generation with PoC
-```
+---
 
-#### Military-Grade Server Penetration Testing
-```python
-# Full server assessment
-target = "192.168.1.100"
-1. Nmap (-sS -sV -O -A) → Ports, versions, OS
-2. Naabu → Fast port confirmation
-3. Service-specific vuln scans
-4. SearchSploit → Known exploits
-5. JWT Tool → Token analysis (if web app)
-6. ExifTool → Metadata extraction
-7. Automated report with CVSS scores
-```
+## About the Developer
 
-### 🔄 Dynamic Script Engine ("GOD MODE")
-Execute custom Python scripts directly from the UI or API:
+**Syed Abrar** is a cybersecurity researcher and developer, currently an **NDA Aspirant**, focused on building tools for advanced **OSINT intelligence gathering, vulnerability analysis, and security automation.**
 
-**Builtin Templates:**
-- `subdomain_bruteforce_extreme` - Multi-tool chain
-- `vuln_scan_nuclei_critical` - Critical vuln detection
-- `ip_recon_asn_bgp` - BGP/ASN intelligence
+Under the alias **Cyb3rvolt3x**, he develops offensive-security research platforms through **SentinelReign.com**, focusing on:
 
-**Custom Scripts:**
-```python
-# Save your own automation
-def my_custom_recon(target):
-    results = {
-        'subdomains': kali_tools.amass(target),
-        'screenshots': advanced_tools.httpx_screenshots(target),
-        'vulns': advanced_tools.nuclei_scan(target)
-    }
-    return results
-```
+* Advanced reconnaissance automation
+* AI-assisted penetration testing (NVIDIA NIM Integration)
+* Threat intelligence correlation
+* Security research tooling
+* Elite tactical emulation (Mitnick, Top Bug Hunters)
 
-### 📊 Maltego-Style Graph Analysis
-- **Entity Types:** Domain, IP, ASN, Email, Certificate, Person, Organization, CVE, IOC
-- **Relationships:** Resolves To, Owned By, Uses, Hosts, References
-- **Confidence Scoring:** 0-100 with source reliability ratings (A-F)
-- **Path Finding:** BFS algorithm to find connections between entities
-- **Infrastructure Overlap:** Detect shared assets across campaigns
+His work is driven by a commitment to **defensive cybersecurity, national security awareness, and responsible security research.**
 
-### 📑 Professional Report Generation
-**Formats:**
-- **Interactive HTML** with embedded network visualization (vis.js)
-- **STIX 2.1** for threat intelligence sharing
-- **JSON** for machine processing
-- **PDF** (via browser print) for executive briefings
+---
 
-**Features:**
-- Auto-logging of all actions to reports
-- Live report editing
-- Executive summaries with risk scores (0-100)
-- Technical annexes with detailed findings
-- IOC extraction & export
-- Chain of custody evidence tracking
+## Mission
 
-### 📝 Integrated Notes System with AI
-- Create case-specific notes with rich text editing
-- Link notes to entities/evidence/reports
-- **AI-Powered Analysis**: Kimi AI analyzes notes and provides insights
-- **Role-Based Assistance**: Get help from Ethical Hacker, Incident Responder, OSINT Specialist personas
-- **Agentic Automation**: AI can suggest and execute follow-up actions
-- Markdown support with syntax highlighting
-- Tag-based organization
-- Export with reports or standalone
+Sentinel Core aims to provide a **powerful, transparent, and extensible cybersecurity platform** that enables security professionals to:
 
-### 🔄 Advanced Correlation Engine
-- IP infrastructure correlation (subnet clustering)
-- Domain cluster analysis
-- SSL certificate correlation across targets
-- WHOIS pattern matching
-- Vulnerability chain detection
-- Attack campaign identification
-- STIX 2.1 export for threat sharing
+* Conduct deep reconnaissance using elite tactics
+* Discover infrastructure relationships via graph analysis
+* Identify vulnerabilities with ML-based anomaly detection
+* Automate intelligence analysis with AI Agents
+* Produce professional, auto-formatted security reports
 
-### 🎯 MITRE ATT&CK Framework Integration
-- Automatic technique mapping from findings
-- 14 tactics covered (Reconnaissance → Impact)
-- Navigator layer JSON export
-- Pre-loaded technique database
-- TTP-based reporting
+while maintaining strict adherence to **ethical hacking standards and legal compliance.**
 
-### 📚 Automated Playbook Engine
-Pre-built elite tactics:
-- **MITNICK Recon**: Kevin Mitnick inspired social engineering methodology
-- **Bug Hunter Web**: Top bug hunter workflows for web apps
-- **External Network**: Elite pentester techniques for network recon
-- **Incident Response**: IR specialist triage procedures
-- Conditional step execution with timeout management
-- Custom playbook creation support
+---
+
+## Tribute to the Armed Forces of India
+
+> **"Service Before Self."**
+
+Sentinel Core is dedicated in tribute to the courage, discipline, and sacrifice of the **Indian Armed Forces.**
+
+We acknowledge and honor the unwavering service of:
+
+* 🇮🇳 **Indian Army** - Guardians of the Land
+* 🇮🇳 **Indian Navy** - Protectors of the Seas
+* 🇮🇳 **Indian Air Force** - Sentinels of the Sky
+
+These forces protect the sovereignty and security of the nation with exceptional dedication. Their commitment to national defense continues to inspire the development of responsible cybersecurity capabilities that strengthen digital resilience.
+
+This platform is built with the spirit of **defense, discipline, and duty** that defines our armed forces.
+
+---
+
+## Key Capabilities
+
+Sentinel Core combines **multiple intelligence and penetration testing capabilities** into a unified platform.
+
+### 🕵️ OSINT Intelligence Gathering
+Comprehensive intelligence collection across domains, infrastructure, certificates, and public datasets.
+
+### 🏗️ Infrastructure Reconnaissance
+Automated discovery of:
+* Domains & Subdomains
+* IP Infrastructure & ASN ownership
+* SSL Certificates & CT Logs
+
+### 🛡️ Vulnerability Assessment
+Integration with advanced scanning tools enables detection of:
+* Known CVEs
+* Web Vulnerabilities (OWASP Top 10)
+* Misconfigurations & Exposed Services
+
+### 🕸️ Graph-Based Intelligence Analysis
+Entities and infrastructure relationships are visualized using a **Maltego-style intelligence graph**, allowing analysts to detect hidden relationships between assets.
+
+### 🤖 AI-Assisted Agentic Operations
+* **Kimi Moonshot K2.5 Integration** via NVIDIA NIM
+* **Elite Roles**: Ethical Hacker, Incident Responder, OSINT Specialist, Report Engineer, Red Teamer, Threat Hunter, Cloud Security, AppSec, IB Officer, Mossad Operator, RAW Analyst.
+* **Agentic Automation**: User-triggered autonomous execution with memory and context.
+* **Smart Token Management**: Optimized usage to reduce expenditure.
+
+### 📊 Automated Recon Workflows
+Pre-built playbooks automate reconnaissance pipelines used by security researchers and bug bounty hunters (e.g., MITNICK Recon, Bug Hunter Web).
+
+### 📝 Professional Report Generation
+Security findings can be exported into multiple formats including:
+* HTML Interactive Reports (Auto-formatted)
+* JSON Structured Data
+* STIX Threat Intelligence Format
+* Executive Security Briefings
+
+---
+
+## Integrated OSINT Modules
+
+Sentinel Core includes multiple built-in modules for structured intelligence gathering.
+
+### DNS Intelligence
+Performs DNS enumeration including A, AAAA, MX, NS, TXT records and infrastructure mapping.
+
+### WHOIS Intelligence
+Collects registration information to identify domain ownership patterns and related infrastructure.
+
+### Certificate Intelligence
+Analyzes SSL/TLS certificates and extracts SAN domains, certificate chains, and related infrastructure.
+
+### Certificate Transparency (CT) Intelligence
+Uses public CT logs to identify hidden subdomains associated with a domain.
+
+### Threat Intelligence Lookup
+Integrates with threat intelligence services to identify malicious infrastructure or malware associations.
+
+### Historical Web Intelligence
+Uses web archive data to analyze historical infrastructure and application changes.
+
+### 🧠 Advanced Correlation Engine
+* IP Infrastructure Correlation (Subnet Clustering)
+* Domain Cluster Analysis
+* SSL Certificate Correlation
+* WHOIS Pattern Matching
+* Vulnerability Chain Detection
+* Attack Campaign Detection
+
+### 🎯 MITRE ATT&CK Mapping
+* Automatic technique mapping from findings
+* 14 Tactics Covered (Reconnaissance → Impact)
+* Navigator Layer JSON Export
 
 ### 🤖 ML-Based Anomaly Detection
-- Port usage anomaly detection
-- Subdomain spray pattern identification
-- Critical CVE prioritization
-- Certificate anomaly detection
-- Risk scoring (0-100) with explanations
+* Port Anomaly Detection
+* Subdomain Spray Detection
+* Critical CVE Identification
+* Certificate Anomalies
+* Risk Score Calculation (0-100)
 
 ---
 
-## 🚀 INSTALLATION
+## Tool Integration
 
-### Prerequisites
-- **Python 3.8+**
-- **Kali Linux** or **Parrot OS** (recommended for tool integration)
-- **Redis** (optional, for production queue)
+Sentinel Core orchestrates numerous reconnaissance and security tools commonly used in professional penetration testing environments.
 
-### Quick Start
+### Reconnaissance Tools
+* Amass
+* Subfinder
+* Assetfinder
+* theHarvester
+
+### Web Application Analysis
+* httpx
+* WhatWeb
+* WAF Detection Tools
+* Directory Discovery Engines
+
+### Vulnerability Detection
+* Nuclei
+* SearchSploit
+* SQL Injection Testing Tools
+
+### Network Intelligence
+* Nmap
+* Naabu
+
+### Digital Forensics Tools
+* Metadata Extraction
+* Binary Analysis
+* Token Inspection
+
+These tools are orchestrated through Sentinel Core's **automation engine** to build advanced reconnaissance pipelines.
+
+---
+
+## Intelligence Graph Analysis
+
+Sentinel Core includes a **relationship-driven graph analysis engine**.
+
+Entities supported include:
+* Domain
+* IP Address
+* ASN
+* Organization
+* Email
+* Certificate
+* Vulnerability
+* Indicators of Compromise (IOC)
+
+Relationships between entities are automatically identified and visualized, allowing analysts to detect **shared infrastructure and attack surface relationships.**
+
+---
+
+## Automated Recon Workflows (Playbooks)
+
+Sentinel Core includes automated reconnaissance playbooks that perform structured intelligence gathering workflows based on elite tactics.
+
+* **MITNICK Recon**: Kevin Mitnick inspired social engineering and recon methodology.
+* **Bug Hunter Web**: Top bug hunter workflows for web apps.
+* **External Network**: Elite pentester techniques for network perimeter.
+* **Incident Response**: IR specialist triage procedures.
+
+Automation significantly reduces manual analysis time while maintaining reproducibility.
+
+---
+
+## Report Generation
+
+Sentinel Core automatically generates professional security reports with **extreme formatting**.
+
+Reports include:
+* Executive Risk Summary
+* Vulnerability Findings
+* Infrastructure Intelligence
+* Indicators of Compromise
+* Evidence Tracking
+* AI-Suggested Next Steps
+
+Supported formats:
+* HTML Interactive Report
+* JSON Export
+* STIX Threat Intelligence Format
+* Printable Security Briefing
+
+---
+
+## Security Architecture
+
+Sentinel Core is designed with security and reliability in mind.
+
+Security protections include:
+* Access Control for Case Data
+* Strict Input Validation
+* Action Logging and Audit Trails
+* Evidence Isolation Storage
+* Rate Limiting Mechanisms
+* Persistent Secure Storage for API Keys
+
+All collected evidence is securely stored to preserve **forensic integrity.**
+
+---
+
+## Installation
+
+### Requirements
+* Python 3.8+
+* Linux Environment (Kali Linux Recommended)
+* Node.js (for some frontend assets, optional)
+
+### Installation Steps
+
 ```bash
+git clone https://github.com/cyb3rvolt3x-A4lixhaS3ntin3l/ShadowsEye.git
 cd sentinel_core
+
+# Install Python dependencies
 pip install -r requirements.txt
-python app.py  # or python shadowseye.py
+
+# Run the application
+python app.py
 ```
 
-**Access:** http://localhost:5001  
-**Default Credentials:** `admin` / `admin123`
-
-⚠️ **CHANGE DEFAULT CREDENTIALS IMMEDIATELY!**
-
-### Kimi AI Configuration (Optional)
-To enable AI-powered features:
-1. Get NVIDIA API key from https://build.nvidia.com
-2. Go to Settings in the UI
-3. Enter your API token
-4. Select model: `moonshotai/kimi-k2.5`
-5. Enable agentic mode for automation suggestions
-6. Configure custom roles for IB/MOSSAD/RAW tactics
-
----
-
-## 📖 API ENDPOINTS
-
-### Authentication
-- `POST /login` - User login
-- `GET /logout` - User logout
-
-### Cases
-- `POST /case/new` - Create new case
-- `GET /case/<id>` - View case details
-- `GET /dashboard` - List all cases
-
-### Module Execution
-- `GET /api/modules` - List available modules
-- `POST /api/module/run` - Execute module (async)
-- `GET /api/task/status/<id>` - Get task status
-- `GET /api/tasks` - List all tasks
-
-### Advanced Recon
-- `POST /api/kali-tools/comprehensive-recon` - Full Kali tool chain
-- `POST /api/recon/full-chain` - Complete recon automation
-- `GET /api/kali-tools/status` - Check available tools
-
-### Custom Scripts
-- `POST /api/script/execute` - Run custom/builtin script
-- `POST /api/script/save` - Save custom script
-- `GET /api/scripts/templates` - List builtin templates
-
-### Tool Execution
-- `GET /api/tools/list` - List all tools by category
-- `POST /api/tool/execute` - Execute single tool
-
-### Reports
-- `GET /api/report/generate/<case_id>?format=html|stix|json` - Generate report
-- `GET /api/report/download/<filename>` - Download report
-- `GET /api/graph/visualize/<case_id>` - Graph data for visualization
-
-### Entities & Relationships
-- `POST /api/entity/add` - Add entity to case
-- `POST /api/relationship/add` - Create relationship
-
----
-
-## 🎯 USAGE EXAMPLES
-
-### 1. Run DNS Enumeration
-```bash
-curl -X POST http://localhost:5001/api/module/run \
-  -F "module_id=dns" \
-  -F "target=example.com" \
-  -F "case_id=1" \
-  -F "priority=5"
+Access the platform at:
+```
+http://localhost:5001
 ```
 
-### 2. Execute Custom Script
-```bash
-curl -X POST http://localhost:5001/api/script/execute \
-  -F "script_name=subdomain_bruteforce_extreme" \
-  -F "target=example.com" \
-  -F "case_id=1"
-```
-
-### 3. Full Recon Chain
-```bash
-curl -X POST http://localhost:5001/api/recon/full-chain \
-  -F "target=example.com" \
-  -F "case_id=1"
-```
-
-### 4. Generate HTML Report
-```bash
-curl http://localhost:5001/api/report/generate/1?format=html \
-  -o report.html
-```
+**Default Credentials:**
+* Username: `admin`
+* Password: `admin123`
+*(Change immediately after first login)*
 
 ---
 
-## 🔐 SECURITY FEATURES
+## Roadmap
 
-- **Case Ownership Checks** - Users can only access their own cases
-- **Audit Logging** - All actions logged with timestamps & IP addresses
-- **Input Validation** - Strict schema validation on all inputs
-- **Circuit Breakers** - Prevent cascade failures
-- **Rate Limiting** - Configurable per-module rate limits
-- **Secret Management** - Secure API key storage
-- **Evidence Isolation** - Forensic-grade evidence storage in `/evidence/`
+Sentinel Core development follows a structured roadmap to expand intelligence and automation capabilities.
 
----
+### ✅ Phase 1 — Core Platform (Completed)
+* Modular OSINT Modules
+* Security Tool Integrations
+* Asynchronous Task Execution
+* Intelligence Graph Engine
+* Automated Reporting System
+* Custom Scripting Capabilities
+* **Kimi Moonshot AI Integration (NVIDIA NIM)**
+* **Persistent Settings & Memory**
+* **Professional UI Overhaul (CDN Based)**
 
-## 🏗️ ARCHITECTURE
+### 🚀 Phase 2 — Intelligence Expansion (In Progress)
+* Advanced Infrastructure Correlation (Fully Implemented)
+* MITRE ATT&CK Technique Mapping (Fully Implemented)
+* Real-time Task Monitoring
+* Collaborative Case Analysis
+* Threat Intelligence Sharing Integrations (MISP, OpenCTI ready)
+* **Agentic AI Automation (User-Triggered)**
+* **Smart Token Budgeting**
 
-```
-sentinel_core/
-├── engine/
-│   ├── module_registry.py    # Module metadata & registration
-│   ├── task_queue.py         # Async job processing (5 workers)
-│   └── script_engine.py      # Dynamic Python script execution
-├── modules/
-│   ├── dns_module.py         # DNS enumeration
-│   ├── whois_module.py       # WHOIS lookup
-│   ├── ssl_module.py         # SSL analysis
-│   ├── crtsh_module.py       # CT log search
-│   ├── shodan_module.py      # Shodan integration
-│   ├── virustotal_module.py  # VT analysis
-│   ├── wayback_module.py     # Wayback Machine
-│   └── hunter_module.py      # Hunter.io
-├── integrations/
-│   ├── kali_tools.py         # Kali/Parrot tools (12+)
-│   └── advanced_tools.py     # Advanced security tools (20+)
-├── models/
-│   └── intelligence.py       # Normalized data model & graph
-├── reports/
-│   └── report_generator.py   # Multi-format report generation
-├── evidence/                 # Forensic-grade evidence storage
-├── user_scripts/             # Custom user scripts
-├── custom_tools/             # User-created tools
-├── shadowseye.py             # Elite launcher
-└── app.py                    # Flask API & Web UI
-```
+### 🔮 Phase 3 — AI-Assisted Security Operations (Active Development)
+* Machine Learning Anomaly Detection (Fully Implemented)
+* Distributed Task Workers
+* Automated Playbook Execution (Fully Implemented)
+* Advanced Intelligence Correlation Engine (Fully Implemented)
+* Large-scale Threat Intelligence Integration (STIX/TAXII)
+* **Elite Tactical Emulation (IB, RAW, Mossad Modes)**
 
 ---
 
-## 📊 COMPARISON VS COMMERCIAL TOOLS
+## Legal Notice
 
-| Feature | Sentinel Core | Maltego | Recorded Future | Cobalt Strike |
-|---------|--------------|---------|-----------------|---------------|
-| Price | **FREE** | $15K+/yr | $50K+/yr | $100K+/yr |
-| Custom Scripting | ✅ Full Python | ⚠️ Limited | ❌ | ⚠️ Aggressor |
-| Tool Integration | ✅ 20+ Native | ⚠️ Transforms | ❌ | ✅ |
-| Async Execution | ✅ 5 Workers | ❌ Sequential | ✅ | ✅ |
-| Graph Analysis | ✅ Maltego-style | ✅ Excellent | ⚠️ Basic | ❌ |
-| STIX Export | ✅ 2.1 Standard | ⚠️ Proprietary | ✅ | ❌ |
-| Report Formats | ✅ 4 Types | ⚠️ PDF | ⚠️ PDF | ❌ |
-| Kali Tools | ✅ Native | ❌ | ❌ | ❌ |
-| Bug Bounty Workflow | ✅ Automated | ❌ | ❌ | ❌ |
+⚠️ **Sentinel Core is intended ONLY for authorized cybersecurity activities.**
 
----
+Permitted uses include:
+* Authorized Penetration Testing
+* Bug Bounty Programs
+* Security Research
+* Corporate Security Assessments
+* Threat Intelligence Analysis
 
-## 🛡️ WATERMARK
+Unauthorized attacks against systems without explicit permission may violate laws including:
+* Computer Fraud and Abuse Act (USA)
+* Computer Misuse Act (UK)
+* Information Technology Act (India)
 
-All outputs include:
-```
-SentinelReign.com
-Developed by Syed Abrar (Cyb3rvolt3x)
-```
+Users are responsible for ensuring compliance with applicable laws and regulations. **The developer (Syed Abrar) assumes no liability for misuse.**
 
 ---
 
-## ⚠️ LEGAL NOTICE
+## Copyright
 
-**This platform is designed for:**
-- Authorized security research
-- Bug bounty hunting (with written permission)
-- Intelligence agency operations
-- Military cyber warfare
-- Corporate threat intelligence
-- Penetration testing (with contract)
+© 2024-2025 **SentinelReign.com**
 
-**Unauthorized use against systems without explicit permission is ILLEGAL and violates:**
-- Computer Fraud and Abuse Act (CFAA) - USA
-- Computer Misuse Act - UK
-- Information Technology Act - India
-- Similar laws worldwide
+Sentinel Core is intellectual property developed by **Syed Abrar (Cyb3rvolt3x).**
 
-**Users are solely responsible for compliance with applicable laws.**
+Unauthorized redistribution, commercial exploitation, or rebranding without permission is prohibited.
+
+All trademarks and referenced technologies remain the property of their respective owners.
+
+**"Service Before Self."** 🇮🇳
 
 ---
 
-## 📞 SUPPORT & CONTRIBUTION
+## Closing Statement
 
-**Developer:** Syed Abrar (Cyb3rvolt3x)  
-**Organization:** SentinelReign.com  
+Sentinel Core represents a vision of **advanced cybersecurity tooling designed to empower ethical security professionals while promoting responsible security research.**
 
-### Contributing
-1. Fork the repository
-2. Create feature branch
-3. Add tests
-4. Submit pull request
+Built by an 18-year-old NDA aspirant, it combines the discipline of the armed forces with the cutting edge of AI and offensive security.
 
-### Reporting Issues
-- Use GitHub Issues
-- Include reproduction steps
-- Specify environment (OS, Python version, tools installed)
-
----
-
-## 🗺️ ROADMAP
-
-### Phase 1 (Current)
-- ✅ 8 built-in OSINT modules
-- ✅ 20+ tool integrations
-- ✅ Async task queue
-- ✅ Graph analysis
-- ✅ Report generation
-- ✅ Custom scripting
-
-### Phase 2 (In Progress)
-- 🔄 Real-time collaboration
-- 🔄 WebSocket live updates
-- 🔄 Advanced correlation engine
-- 🔄 ATT&CK mapping
-- 🔄 MISP integration
-
-### Phase 3 (Planned)
-- ⏳ STIX/TAXII server
-- ⏳ OpenCTI integration
-- ⏳ ML-based anomaly detection
-- ⏳ Automated playbook execution
-- ⏳ Distributed worker scaling
-
----
-
-## 📚 REFERENCES
-
-- [MITRE ATT&CK Framework](https://attack.mitre.org)
-- [STIX 2.1 Specification](https://oasis-open.github.io/cti-documentation/)
-- [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
-- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
-
----
-
-**© 2024 SentinelReign.com | Developed by Syed Abrar (Cyb3rvolt3x)**
-
-*"The best defense is intelligent offense."*
+Through continuous development and community collaboration, the platform aims to strengthen global cybersecurity capabilities and defensive intelligence.

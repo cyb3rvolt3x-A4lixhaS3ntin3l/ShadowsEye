@@ -1224,6 +1224,12 @@ def ai_analyze_note(note_id):
     result = kimi_agent.chat(f"Analyze these security notes and provide insights:\n\n{content}", role=role)
     return jsonify(result)
 
+@app.route('/about')
+@login_required
+def about():
+    """About Us page"""
+    return render_template('about.html')
+
 if __name__ == '__main__':
     # Initialize database
     init_db()
