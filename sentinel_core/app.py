@@ -19,7 +19,7 @@ import logging
 import subprocess
 import hashlib
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from typing import Dict, List, Any, Optional
 
@@ -64,7 +64,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     email = db.Column(db.String(120), unique=True)
     role = db.Column(db.String(50), default='analyst')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     last_login = db.Column(db.DateTime)
     
     cases = db.relationship('Case', backref='owner', lazy=True)
@@ -79,8 +79,8 @@ class Case(db.Model):
     status = db.Column(db.String(50), default='active')
     priority = db.Column(db.String(20), default='medium')
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     entities = db.relationship('Entity', backref='case', lazy=True, cascade='all, delete-orphan')
     notes = db.relationship('Note', backref='case', lazy=True, cascade='all, delete-orphan')
@@ -95,7 +95,7 @@ class Entity(db.Model):
     value = db.Column(db.String(500), nullable=False)
     entity_metadata = db.Column(db.JSON, default=dict)
     risk_score = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     scan_results = db.relationship('ScanResult', backref='entity', lazy=True, cascade='all, delete-orphan')
     relationships = db.relationship('Relationship', foreign_keys='Relationship.source_id', backref='source', lazy=True)
@@ -108,7 +108,7 @@ class Relationship(db.Model):
     target_id = db.Column(db.Integer, db.ForeignKey('entity.id'), nullable=False)
     relationship_type = db.Column(db.String(100))  # resolves_to, hosted_on, registered_by, etc.
     confidence = db.Column(db.Float, default=1.0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class ScanResult(db.Model):
@@ -120,7 +120,7 @@ class ScanResult(db.Model):
     status = db.Column(db.String(50), default='completed')
     results = db.Column(db.JSON, default=list)
     findings_count = db.Column(db.Integer, default=0)
-    executed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    executed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     execution_time = db.Column(db.Float)  # seconds
 
 
@@ -136,7 +136,7 @@ class Finding(db.Model):
     evidence = db.Column(db.JSON, default=list)
     recommendations = db.Column(db.Text)
     status = db.Column(db.String(50), default='open')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class Note(db.Model):
@@ -146,8 +146,8 @@ class Note(db.Model):
     content = db.Column(db.Text, nullable=False)
     tags = db.Column(db.JSON, default=list)
     ai_enhanced = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 class CustomTool(db.Model):
@@ -159,7 +159,7 @@ class CustomTool(db.Model):
     parameters = db.Column(db.JSON, default=list)
     language = db.Column(db.String(20), default='bash')  # bash, python, php
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     is_active = db.Column(db.Boolean, default=True)
 
 
@@ -170,7 +170,7 @@ class Playbook(db.Model):
     steps = db.Column(db.JSON, nullable=False)  # List of {module, params, conditional}
     timeout_per_step = db.Column(db.Integer, default=300)  # seconds
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class AuditLog(db.Model):
@@ -181,7 +181,7 @@ class AuditLog(db.Model):
     resource_id = db.Column(db.Integer)
     details = db.Column(db.JSON, default=dict)
     ip_address = db.Column(db.String(45))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class APIKey(db.Model):
@@ -190,7 +190,7 @@ class APIKey(db.Model):
     key_value = db.Column(db.String(500), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     last_used = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class ConversationHistory(db.Model):
@@ -199,8 +199,8 @@ class ConversationHistory(db.Model):
     role = db.Column(db.String(50), default='ethical_hacker')
     messages = db.Column(db.JSON, default=list)
     token_usage = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 # ============================================================================
@@ -209,7 +209,7 @@ class ConversationHistory(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 # ============================================================================
@@ -237,7 +237,7 @@ def get_api_key(service: str) -> Optional[str]:
     """Get API key for a service"""
     api_key = APIKey.query.filter_by(service=service, is_active=True).first()
     if api_key:
-        api_key.last_used = datetime.utcnow()
+        api_key.last_used = datetime.now(timezone.utc)
         db.session.commit()
         return api_key.key_value
     return None
@@ -298,7 +298,7 @@ def login():
         
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now(timezone.utc)
             db.session.commit()
             
             log_audit('login', 'user', user.id)
@@ -355,9 +355,14 @@ def cases_list():
 @login_required
 def case_new():
     if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
+        title = request.form.get('title', '').strip()
+        description = request.form.get('description', '').strip()
         priority = request.form.get('priority', 'medium')
+        
+        # Validate required fields
+        if not title:
+            flash('Case title is required', 'danger')
+            return render_template('case_form.html', action='new')
         
         case = Case(
             title=title,
@@ -431,7 +436,7 @@ def run_scan(case_id, entity_id, module_name):
     case = Case.query.get_or_404(case_id)
     entity = Entity.query.get_or_404(entity_id)
     
-    start_time = datetime.utcnow()
+    start_time = datetime.now(timezone.utc)
     
     try:
         # Import and run the appropriate module
@@ -487,7 +492,7 @@ def run_scan(case_id, entity_id, module_name):
         else:
             return jsonify({'error': f'Unknown module: {module_name}'}), 400
         
-        execution_time = (datetime.utcnow() - start_time).total_seconds()
+        execution_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         
         # Save scan result
         scan_result = ScanResult(
@@ -533,7 +538,7 @@ def run_scan(case_id, entity_id, module_name):
         
     except Exception as e:
         logger.error(f"Scan failed: {e}")
-        execution_time = (datetime.utcnow() - start_time).total_seconds()
+        execution_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         
         scan_result = ScanResult(
             case_id=case_id,
@@ -763,7 +768,7 @@ def run_custom_tool(tool_id):
                 return jsonify({'error': 'Dangerous command detected'}), 400
         
         # Execute command
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         result = subprocess.run(
             command,
             shell=True,
@@ -771,7 +776,7 @@ def run_custom_tool(tool_id):
             text=True,
             timeout=300
         )
-        execution_time = (datetime.utcnow() - start_time).total_seconds()
+        execution_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         
         log_audit('custom_tool_executed', 'custom_tool', tool_id, {
             'name': tool.name,
@@ -813,7 +818,7 @@ def run_kali_tool(tool_name):
     command = f"{tool_name} {safe_options} {safe_target}"
     
     try:
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         result = subprocess.run(
             command,
             shell=True,
@@ -821,7 +826,7 @@ def run_kali_tool(tool_name):
             text=True,
             timeout=600
         )
-        execution_time = (datetime.utcnow() - start_time).total_seconds()
+        execution_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         
         log_audit('kali_tool_executed', 'tool', None, {
             'tool': tool_name,
@@ -881,7 +886,7 @@ def terminal_execute():
             return jsonify({'error': 'Dangerous command pattern detected'}), 400
     
     try:
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         result = subprocess.run(
             command,
             shell=True,
@@ -890,7 +895,7 @@ def terminal_execute():
             timeout=300,
             cwd='/tmp'
         )
-        execution_time = (datetime.utcnow() - start_time).total_seconds()
+        execution_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         
         log_audit('terminal_command', 'terminal', None, {
             'command': command[:200],
@@ -1276,7 +1281,7 @@ def mitre_export(case_id):
         ],
         'metadata': [
             {'name': 'Case ID', 'value': str(case_id)},
-            {'name': 'Export Date', 'value': datetime.utcnow().isoformat()}
+            {'name': 'Export Date', 'value': datetime.now(timezone.utc).isoformat()}
         ],
         'showTacticRowBackground': True,
         'tacticRowBackground': '#dddddd',
@@ -1312,7 +1317,6 @@ def init_db():
             logger.info(f"Initial admin password (CHANGE IMMEDIATELY): {initial_password}")
             db.session.add(admin)
             db.session.commit()
-            logger.info("Admin user created: admin / admin123")
         
         # Create default playbooks
         if Playbook.query.count() == 0:

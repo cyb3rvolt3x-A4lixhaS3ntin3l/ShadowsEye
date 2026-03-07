@@ -1,0 +1,67 @@
+2026-03-07 12:27:25,649 - app - ERROR - Exception on /dashboard [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask_login/utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/sentinel_core/app.py", line 340, in dashboard
+    return render_template('dashboard.html', stats=stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/usr/local/lib/python3.12/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/workspace/sentinel_core/templates/dashboard.html", line 93, in top-level template code
+    <form action="{{ url_for('case_create') }}" method="POST" style="display: flex; gap: 10px; align-items: flex-end;">
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'case_create'. Did you mean 'case_graph' instead?
+2026-03-07 12:54:27,786 - SentinelCore - INFO - Default playbooks created
+2026-03-07 12:54:27,786 - SentinelCore - INFO - Starting Sentinel Core...
+2026-03-07 12:54:27,914 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://21.0.5.167:5001
+2026-03-07 12:54:27,915 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-03-07 12:54:29,858 - werkzeug - INFO - 127.0.0.1 - - [07/Mar/2026 12:54:29] "GET /login HTTP/1.1" 200 -
+2026-03-07 12:55:03,012 - SentinelCore - INFO - Initial admin password (CHANGE IMMEDIATELY): GUuF6l-UzCNddFPuwvwHWw
+2026-03-07 12:55:03,119 - SentinelCore - INFO - Admin user created: admin / admin123
+2026-03-07 12:55:03,316 - SentinelCore - INFO - Default playbooks created
+2026-03-07 12:55:03,316 - SentinelCore - INFO - Starting Sentinel Core...
+2026-03-07 12:55:03,470 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://21.0.5.167:5001
+2026-03-07 12:55:03,471 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-03-07 12:56:07,751 - SentinelCore - INFO - Initial admin password (CHANGE IMMEDIATELY): zp53WGXnGqlUOq-yeoF2cA
+2026-03-07 12:56:08,184 - SentinelCore - INFO - Default playbooks created
+2026-03-07 12:56:08,185 - SentinelCore - INFO - Starting Sentinel Core...
+2026-03-07 12:56:08,339 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://21.0.5.167:5001
+2026-03-07 12:56:08,339 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
