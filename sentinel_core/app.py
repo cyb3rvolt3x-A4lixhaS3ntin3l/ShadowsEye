@@ -1068,30 +1068,51 @@ def anomaly_results():
 @app.route('/api/settings/kimi', methods=['POST'])
 @login_required
 def set_kimi_config():
-    """Configure Kimi AI API settings"""
-    api_key = request.form.get('api_key', '')
-    base_url = request.form.get('base_url', 'https://api.moonshot.cn/v1')
-    model = request.form.get('model', 'moonshot-v1-8k')
+    """Configure Kimi AI API settings (NVIDIA NIM)"""
+    data = request.get_json() or request.form
     
-    # Update environment variable (for current session)
-    os.environ['KIMI_API_KEY'] = api_key
-    os.environ['KIMI_BASE_URL'] = base_url
+    api_key = data.get('api_key', '')
+    base_url = data.get('base_url', 'https://integrate.api.nvidia.com/v1')
+    model = data.get('model', 'moonshotai/kimi-k2.5')
+    enable_thinking = str(data.get('enable_thinking', 'true')).lower() in ['true', '1']
+    enable_agentic = str(data.get('enable_agentic', 'false')).lower() in ['true', '1']
+    memory_enabled = str(data.get('memory_enabled', 'true')).lower() in ['true', '1']
+    custom_prompt = data.get('custom_prompt', '')
+    temperature = float(data.get('temperature', 1.0))
+    max_tokens = int(data.get('max_tokens', 16384))
+
+    # Update environment variables
+    os.environ['NVIDIA_API_KEY'] = api_key
+    os.environ['NVIDIA_BASE_URL'] = base_url
     os.environ['KIMI_MODEL'] = model
-    
-    # Reinitialize assistant with new config
-    from ai.kimi_integration import KimiConfig
-    kimi_assistant.config = KimiConfig(
+    os.environ['KIMI_ENABLE_THINKING'] = str(enable_thinking)
+    os.environ['KIMI_ENABLE_AGENTIC'] = str(enable_agentic)
+
+    # Reconfigure assistant
+    kimi_assistant.configure(
         api_key=api_key,
-        base_url=base_url,
-        model=model
+        model=model,
+        enable_agentic=enable_agentic,
+        custom_prompt=custom_prompt,
+        enable_thinking=enable_thinking,
+        memory_enabled=memory_enabled,
+        temperature=temperature,
+        max_tokens=max_tokens
     )
     
-    log_audit(session['user_id'], 'SET_KIMI_CONFIG', 'Updated Kimi AI configuration', request.remote_addr)
-    
+    if base_url != kimi_assistant.config.base_url:
+        kimi_assistant.config.base_url = base_url
+        kimi_assistant._update_headers()
+
+    log_audit(session['user_id'], 'SET_KIMI_CONFIG', f'Updated Kimi AI config (model: {model})', request.remote_addr)
+
     return jsonify({
         'success': True,
         'configured': kimi_assistant.is_configured(),
-        'model': model
+        'model': model,
+        'enable_thinking': enable_thinking,
+        'enable_agentic': enable_agentic,
+        'memory_enabled': memory_enabled
     })
 
 @app.route('/api/settings/kimi', methods=['GET'])
