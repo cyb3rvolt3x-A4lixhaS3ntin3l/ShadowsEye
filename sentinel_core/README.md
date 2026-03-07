@@ -1,179 +1,222 @@
-# 🛡️ Sentinel Core - Elite OSINT Platform
+# 🛡️ SENTINEL CORE - ELITE OSINT PLATFORM
 
-**Powered by ShadowEye Launcher** | **Developed by Syed Abrar (Cyb3rvolt3x)** | **© SentinelReign.com**
-
-The world's most advanced open-source intelligence platform designed for:
-- **RAW / MOSSAD / IB** Intelligence Agencies
-- **Military Cyber Commands** & Nation-State Operations
-- **Elite Ethical Hackers** & Bug Bounty Hunters
-- **Professional SOC Teams** & Incident Responders
+**Developed by:** Syed Abrar (Alias: Cyb3rvolt3x)  
+**Organization:** [SentinelReign.com](https://sentinelreign.com)  
+**Classification:** ELITE TIER - For Intelligence Agencies, Military & Ethical Hackers  
 
 ---
 
-## ⚠️ Legal Disclaimer
+## 🎯 OVERVIEW
 
-**This tool is intended for legitimate security purposes only:**
-- Authorized penetration testing and red team operations
-- Intelligence gathering on systems you own or have explicit permission to test
-- Threat intelligence and counter-terrorism operations
-- Defensive security operations and incident response
-- Educational purposes in controlled environments
+Sentinel Core is a **production-grade, modular OSINT platform** designed for:
+- **RAW / MOSSAD / IB** Intelligence Operations
+- **Military Cyber Commands** (USCYBERCOM, IDF, GCHQ, etc.)
+- **Elite Bug Bounty Hunters** & Penetration Testers
+- **SOC Teams** & Incident Responders
+- **Threat Intelligence Analysts**
 
-**⚔️ AUTHORIZED USE ONLY**: Unauthorized access to computer systems is illegal under:
-- Computer Fraud and Abuse Act (CFAA) - USA
-- Computer Misuse Act - UK
-- Information Technology Act - India
-- Similar laws worldwide
+This is the **premier choice** for nation-state level reconnaissance, automated penetration testing workflows, and threat intelligence fusion.
 
 ---
 
-## ✨ Elite Features
+## ⚡ KEY FEATURES
 
-### 🔐 Military-Grade Security
-- **Secure Authentication**: Bcrypt password hashing with session management
-- **Audit Logging**: Tamper-evident action tracking for compliance
-- **Case Ownership Checks**: Prevent unauthorized access to investigations
-- **Immutable Evidence Chain**: Chain of custody for all artifacts
+### 🔥 8 Built-in OSINT Modules
+| Module | Description | API Key Required |
+|--------|-------------|------------------|
+| **DNS** | Comprehensive DNS enumeration with subdomain discovery | ❌ |
+| **WHOIS** | Domain registration & ownership intelligence | ❌ |
+| **SSL/TLS** | Certificate analysis & CT log correlation | ❌ |
+| **CRTSH** | Subdomain discovery via Certificate Transparency | ❌ |
+| **Shodan** | IoT device & service discovery | ✅ SHODAN_API_KEY |
+| **VirusTotal** | Malware & URL reputation analysis | ✅ VIRUSTOTAL_API_KEY |
+| **Wayback Machine** | Historical website archives | ❌ |
+| **Hunter.io** | Professional email address discovery | ✅ HUNTER_API_KEY |
 
-### 🎯 Advanced Capabilities
-- **Real Module Execution Engine**: Async task queue with 5 parallel workers
-- **Dynamic Script Engine (GOD MODE)**: Execute custom Python scripts directly
-- **Maltego-Style Graph Analysis**: Interactive entity relationship mapping
-- **20+ Integrated Kali/Parrot Tools**: Amass, Nuclei, Naabu, HTTPX, and more
-- **Automated Recon Chains**: Full-spectrum reconnaissance automation
-- **Multi-Format Reports**: HTML, STIX 2.1, JSON, PDF exports
+### 🛠️ 20+ Integrated Kali/Parrot Tools
+Auto-detected and integrated:
+- **Recon:** `amass`, `subfinder`, `assetfinder`, `theHarvester`, `sherlock`, `maigret`
+- **Web:** `httpx`, `whatweb`, `wafw00f`, `gobuster`, `ffuf`
+- **Vuln:** `nuclei`, `searchsploit`, `sqlmap`
+- **Network:** `nmap`, `naabu`
+- **Post-Exploit:** `exiftool`, `binwalk`, `jwt-tool`
 
-### 📊 Built-in OSINT Modules (8 Total) - ALL REGISTERED
+### 🧠 Elite Automation Tactics
 
-| Module | Description | API Key Required | Status |
-|--------|-------------|------------------|--------|
-| **DNS Enumeration** | DNS records & subdomain discovery | No | ✅ Registered |
-| **WHOIS Lookup** | Domain registration information | No | ✅ Registered |
-| **SSL Analysis** | Certificate details & validity | No | ✅ Registered |
-| **Certificate Transparency** | Subdomain discovery via CT logs | No | ✅ Registered |
-| **Shodan Search** | IoT device & service discovery | Yes (free tier) | ✅ Registered |
-| **VirusTotal Analysis** | Malware & URL reputation | Yes (free tier) | ✅ Registered |
-| **Wayback Machine** | Historical web archives | No | ✅ Registered |
-| **Hunter.io** | Professional email discovery | Yes (free tier) | ✅ Registered |
+#### Kevin Mitnick's Social Engineering Recon
+```python
+# Auto-chain: Domain → Emails → Social Profiles → Password Breaches
+target = "company.com"
+1. Hunter.io → Employee emails
+2. theHarvester → Additional emails & subdomains
+3. Sherlock/Maigret → Social media profiles
+4. DeHashed/HaveIBeenPwned → Credential leaks
+```
 
-**All 8 modules are automatically registered on startup via ShadowEye launcher.**
+#### RAW/MOSSAD Infrastructure Mapping
+```python
+# Complete infrastructure fingerprinting
+target = "target.gov"
+1. Amass (aggressive mode) → All subdomains
+2. DNS enumeration → Record types (A, AAAA, MX, TXT, SPF, DMARC)
+3. Shodan → Open ports, services, vulnerabilities
+4. SSL analysis → Certificate chains, SANs
+5. Nmap → Detailed port scanning
+6. WhatWeb → Technology stack
+7. Nuclei → Vulnerability detection
+```
 
-### 🛠️ Integrated Kali/Parrot Tools (20+)
+#### Top Bug Bounty Hunter Workflow
+```python
+# Automated bug hunting chain
+target = "*.example.com"
+1. Subdomain brute-forcing (Amass + Subfinder + Assetfinder)
+2. HTTP probing (httpx) → Live hosts
+3. Screenshot capture → Visual recon
+4. Technology detection (WhatWeb)
+5. Vulnerability scanning (Nuclei templates)
+6. Parameter fuzzing (FFUF)
+7. Report generation with PoC
+```
 
-**Reconnaissance:**
-- `amass` - Comprehensive subdomain enumeration
-- `subfinder` - Fast subdomain discovery
-- `assetfinder` - Related domain finder
-- `theHarvester` - Email harvesting
-- `sherlock` - Username search across platforms
-- `maigret` - Advanced username analysis
-- `httpx` - HTTP probing & technology detection
-- `whatweb` - Website fingerprinting
-- `wafw00f` - WAF detection
+#### Military-Grade Server Penetration Testing
+```python
+# Full server assessment
+target = "192.168.1.100"
+1. Nmap (-sS -sV -O -A) → Ports, versions, OS
+2. Naabu → Fast port confirmation
+3. Service-specific vuln scans
+4. SearchSploit → Known exploits
+5. JWT Tool → Token analysis (if web app)
+6. ExifTool → Metadata extraction
+7. Automated report with CVSS scores
+```
 
-**Vulnerability Assessment:**
-- `nuclei` - Template-based vulnerability scanning
-- `searchsploit` - Exploit database search
-- `sqlmap` - SQL injection testing
+### 🔄 Dynamic Script Engine ("GOD MODE")
+Execute custom Python scripts directly from the UI or API:
 
-**Network Scanning:**
-- `nmap` - Port scanning & service detection
-- `naabu` - Fast port scanner
+**Builtin Templates:**
+- `subdomain_bruteforce_extreme` - Multi-tool chain
+- `vuln_scan_nuclei_critical` - Critical vuln detection
+- `ip_recon_asn_bgp` - BGP/ASN intelligence
 
-**Post-Exploitation:**
-- `exiftool` - Metadata extraction
-- `binwalk` - Firmware analysis
-- `jwt-tool` - JWT token analysis
+**Custom Scripts:**
+```python
+# Save your own automation
+def my_custom_recon(target):
+    results = {
+        'subdomains': kali_tools.amass(target),
+        'screenshots': advanced_tools.httpx_screenshots(target),
+        'vulns': advanced_tools.nuclei_scan(target)
+    }
+    return results
+```
 
-### 🎨 Modern Web Interface
-- Responsive dark theme UI
-- Real-time graph visualization with vis.js
-- Drag-and-drop entity management
-- Live task monitoring dashboard
-- Audit log viewer with filtering
-- Custom script editor
+### 📊 Maltego-Style Graph Analysis
+- **Entity Types:** Domain, IP, ASN, Email, Certificate, Person, Organization, CVE, IOC
+- **Relationships:** Resolves To, Owned By, Uses, Hosts, References
+- **Confidence Scoring:** 0-100 with source reliability ratings (A-F)
+- **Path Finding:** BFS algorithm to find connections between entities
+- **Infrastructure Overlap:** Detect shared assets across campaigns
+
+### 📑 Professional Report Generation
+**Formats:**
+- **Interactive HTML** with embedded network visualization (vis.js)
+- **STIX 2.1** for threat intelligence sharing
+- **JSON** for machine processing
+- **PDF** (via browser print) for executive briefings
+
+**Features:**
+- Auto-logging of all actions to reports
+- Live report editing
+- Executive summaries with risk scores (0-100)
+- Technical annexes with detailed findings
+- IOC extraction & export
+- Chain of custody evidence tracking
+
+### 📝 Integrated Notes System
+- Create case-specific notes
+- Link notes to entities/evidence
+- Markdown support
+- Export with reports
 
 ---
 
-## 🚀 Quick Start
+## 🚀 INSTALLATION
 
 ### Prerequisites
 - **Python 3.8+**
-- **Kali Linux / Parrot OS** (recommended for full tool integration)
-- **pip package manager**
+- **Kali Linux** or **Parrot OS** (recommended for tool integration)
+- **Redis** (optional, for production queue)
 
-### Installation
-
+### Quick Start
 ```bash
-cd /workspace/sentinel_core
+cd sentinel_core
 pip install -r requirements.txt
-```
-
-### Launch with ShadowEye
-
-```bash
 python shadowseye.py
 ```
 
-**ShadowEye** provides:
-- Automatic database initialization
-- Tool availability detection
-- Module registration
-- Worker pool startup
-- Browser auto-launch
+**Access:** http://localhost:5001  
+**Default Credentials:** `admin` / `admin123`
 
-### Access the Platform
-
-```
-🌐 Local: http://localhost:5001
-🌐 Network: http://[YOUR_IP]:5001
-```
-
-### Default Credentials
-```
-Username: admin
-Password: admin123
-```
-
-**⚠️ CHANGE IMMEDIATELY AFTER FIRST LOGIN!**
+⚠️ **CHANGE DEFAULT CREDENTIALS IMMEDIATELY!**
 
 ---
 
-## 📖 Usage Guide
+## 📖 API ENDPOINTS
 
-### Creating a Case
-1. Log in with your credentials
-2. Click **"New Case"** on the dashboard
-3. Enter case name and description (e.g., "Target Corp Recon")
-4. Click **"Create Case"**
+### Authentication
+- `POST /login` - User login
+- `GET /logout` - User logout
 
-### Running Automated Recon
+### Cases
+- `POST /case/new` - Create new case
+- `GET /case/<id>` - View case details
+- `GET /dashboard` - List all cases
 
-**Option 1: Single Module**
+### Module Execution
+- `GET /api/modules` - List available modules
+- `POST /api/module/run` - Execute module (async)
+- `GET /api/task/status/<id>` - Get task status
+- `GET /api/tasks` - List all tasks
+
+### Advanced Recon
+- `POST /api/kali-tools/comprehensive-recon` - Full Kali tool chain
+- `POST /api/recon/full-chain` - Complete recon automation
+- `GET /api/kali-tools/status` - Check available tools
+
+### Custom Scripts
+- `POST /api/script/execute` - Run custom/builtin script
+- `POST /api/script/save` - Save custom script
+- `GET /api/scripts/templates` - List builtin templates
+
+### Tool Execution
+- `GET /api/tools/list` - List all tools by category
+- `POST /api/tool/execute` - Execute single tool
+
+### Reports
+- `GET /api/report/generate/<case_id>?format=html|stix|json` - Generate report
+- `GET /api/report/download/<filename>` - Download report
+- `GET /api/graph/visualize/<case_id>` - Graph data for visualization
+
+### Entities & Relationships
+- `POST /api/entity/add` - Add entity to case
+- `POST /api/relationship/add` - Create relationship
+
+---
+
+## 🎯 USAGE EXAMPLES
+
+### 1. Run DNS Enumeration
 ```bash
 curl -X POST http://localhost:5001/api/module/run \
   -F "module_id=dns" \
   -F "target=example.com" \
-  -F "case_id=1"
+  -F "case_id=1" \
+  -F "priority=5"
 ```
 
-**Option 2: Full Recon Chain**
-```bash
-curl -X POST http://localhost:5001/api/recon/full-chain \
-  -F "target=example.com" \
-  -F "case_id=1"
-```
-
-**Option 3: Kali Tools Comprehensive Scan**
-```bash
-curl -X POST http://localhost:5001/api/kali-tools/comprehensive-recon \
-  -F "domain=example.com" \
-  -F "case_id=1"
-```
-
-### Executing Custom Scripts (GOD MODE)
-
-**Using Built-in Templates:**
+### 2. Execute Custom Script
 ```bash
 curl -X POST http://localhost:5001/api/script/execute \
   -F "script_name=subdomain_bruteforce_extreme" \
@@ -181,271 +224,165 @@ curl -X POST http://localhost:5001/api/script/execute \
   -F "case_id=1"
 ```
 
-**Custom Python Script:**
+### 3. Full Recon Chain
 ```bash
-curl -X POST http://localhost:5001/api/script/execute \
-  -F "code=from integrations.kali_tools import kali_tools\nresult = kali_tools.run_amass('example.com')\nprint(result)" \
+curl -X POST http://localhost:5001/api/recon/full-chain \
   -F "target=example.com" \
   -F "case_id=1"
 ```
 
-### Generating Reports
-
-**HTML Report with Graph:**
+### 4. Generate HTML Report
 ```bash
-curl http://localhost:5001/api/report/generate/1?format=html
-```
-
-**STIX 2.1 Export (Threat Intelligence):**
-```bash
-curl http://localhost:5001/api/graph/export/1
+curl http://localhost:5001/api/report/generate/1?format=html \
+  -o report.html
 ```
 
 ---
 
-## 🏗️ Architecture
+## 🔐 SECURITY FEATURES
+
+- **Case Ownership Checks** - Users can only access their own cases
+- **Audit Logging** - All actions logged with timestamps & IP addresses
+- **Input Validation** - Strict schema validation on all inputs
+- **Circuit Breakers** - Prevent cascade failures
+- **Rate Limiting** - Configurable per-module rate limits
+- **Secret Management** - Secure API key storage
+- **Evidence Isolation** - Forensic-grade evidence storage in `/evidence/`
+
+---
+
+## 🏗️ ARCHITECTURE
 
 ```
 sentinel_core/
-├── shadowseye.py          # Elite launcher (USE THIS!)
-├── app.py                 # Flask application core
-├── requirements.txt       # Python dependencies
-├── db/                    # SQLite database (absolute path)
-│   └── sentinel.db
-├── evidence/              # Forensic-grade report storage
-├── engine/                # Core execution engine
-│   ├── __init__.py
-│   ├── module_registry.py    # Module metadata & secrets
-│   ├── task_queue.py         # Async worker pool (5 workers)
-│   └── script_engine.py      # Dynamic script execution
-├── models/                # Data models
-│   └── intelligence.py       # Entity/relationship schema
-├── modules/               # OSINT modules (8 total)
-│   ├── dns_module.py
-│   ├── whois_module.py
-│   ├── ssl_module.py
-│   ├── crtsh_module.py
-│   ├── shodan_module.py      # ✅ Registered
-│   ├── virustotal_module.py  # ✅ Registered
-│   ├── wayback_module.py     # ✅ Registered
-│   └── hunter_module.py      # ✅ Registered
-├── integrations/          # External tool integration
-│   ├── kali_tools.py         # Kali/Parrot tools
-│   └── advanced_tools.py     # 20+ tool registry
-├── reports/               # Report generation
-│   └── report_generator.py   # HTML/STIX/JSON (evidence dir)
-├── templates/             # HTML templates
-│   ├── login.html
-│   ├── dashboard.html
-│   ├── case.html
-│   └── audit.html
-├── static/                # Static assets
-│   ├── css/
-│   └── js/
-└── user_modules/          # Custom user scripts (auto-created)
+├── engine/
+│   ├── module_registry.py    # Module metadata & registration
+│   ├── task_queue.py         # Async job processing (5 workers)
+│   └── script_engine.py      # Dynamic Python script execution
+├── modules/
+│   ├── dns_module.py         # DNS enumeration
+│   ├── whois_module.py       # WHOIS lookup
+│   ├── ssl_module.py         # SSL analysis
+│   ├── crtsh_module.py       # CT log search
+│   ├── shodan_module.py      # Shodan integration
+│   ├── virustotal_module.py  # VT analysis
+│   ├── wayback_module.py     # Wayback Machine
+│   └── hunter_module.py      # Hunter.io
+├── integrations/
+│   ├── kali_tools.py         # Kali/Parrot tools (12+)
+│   └── advanced_tools.py     # Advanced security tools (20+)
+├── models/
+│   └── intelligence.py       # Normalized data model & graph
+├── reports/
+│   └── report_generator.py   # Multi-format report generation
+├── evidence/                 # Forensic-grade evidence storage
+├── user_scripts/             # Custom user scripts
+├── custom_tools/             # User-created tools
+├── shadowseye.py             # Elite launcher
+└── app.py                    # Flask API & Web UI
 ```
 
 ---
 
-## 🔧 API Endpoints Reference
+## 📊 COMPARISON VS COMMERCIAL TOOLS
 
-### Module Execution
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/modules` | GET | List all registered modules |
-| `/api/module/run` | POST | Execute a module (async) |
-| `/api/task/status/<id>` | GET | Get task status |
-| `/api/tasks` | GET | List all tasks |
-
-### Kali Tools
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/kali-tools/status` | GET | Check available tools |
-| `/api/kali-tools/comprehensive-recon` | POST | Run full Kali tool suite |
-| `/api/tools/list` | GET | List tools by category |
-| `/api/tool/execute` | POST | Execute single tool |
-
-### Script Engine
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/script/execute` | POST | Run custom/builtin script |
-| `/api/script/save` | POST | Save custom script |
-| `/api/scripts/templates` | GET | List builtin templates |
-
-### Recon Automation
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/recon/full-chain` | POST | Full automated recon |
-
-### Reports & Visualization
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/report/generate/<case_id>` | GET | Generate report (HTML/STIX/JSON) |
-| `/api/report/download/<filename>` | GET | Download generated report |
-| `/api/graph/visualize/<case_id>` | GET | Get graph data for visualization |
-| `/api/graph/export/<case_id>` | GET | Export to STIX 2.1 format |
+| Feature | Sentinel Core | Maltego | Recorded Future | Cobalt Strike |
+|---------|--------------|---------|-----------------|---------------|
+| Price | **FREE** | $15K+/yr | $50K+/yr | $100K+/yr |
+| Custom Scripting | ✅ Full Python | ⚠️ Limited | ❌ | ⚠️ Aggressor |
+| Tool Integration | ✅ 20+ Native | ⚠️ Transforms | ❌ | ✅ |
+| Async Execution | ✅ 5 Workers | ❌ Sequential | ✅ | ✅ |
+| Graph Analysis | ✅ Maltego-style | ✅ Excellent | ⚠️ Basic | ❌ |
+| STIX Export | ✅ 2.1 Standard | ⚠️ Proprietary | ✅ | ❌ |
+| Report Formats | ✅ 4 Types | ⚠️ PDF | ⚠️ PDF | ❌ |
+| Kali Tools | ✅ Native | ❌ | ❌ | ❌ |
+| Bug Bounty Workflow | ✅ Automated | ❌ | ❌ | ❌ |
 
 ---
 
-## 🔒 Security Features
+## 🛡️ WATERMARK
 
-### Case Ownership Enforcement
-All task execution endpoints now verify:
-- User owns the target case
-- Unauthorized attempts are logged to audit trail
-- 403 Forbidden returned for access violations
-
-### Input Validation
-- Type checking on all numeric parameters
-- SQL injection prevention via parameterized queries
-- XSS protection in web interface
-
-### Audit Trail
-Every action is logged with:
-- Timestamp
-- User ID
-- Action type
-- IP address
-- Detailed context
-
----
-
-## 🛠️ Troubleshooting
-
-### Missing Kali Tools
-Check available tools:
-```bash
-curl http://localhost:5001/api/kali-tools/status
+All outputs include:
+```
+SentinelReign.com
+Developed by Syed Abrar (Cyb3rvolt3x)
 ```
 
-Install missing tools:
-```bash
-sudo apt update && sudo apt install amass subfinder nuclei naabu httpx
-```
+---
 
-### Database Errors
-Reset database:
-```bash
-rm db/sentinel.db
-python shadowseye.py
-```
+## ⚠️ LEGAL NOTICE
 
-### Port Already in Use
-ShadowEye will prompt to use alternative port (5002).
+**This platform is designed for:**
+- Authorized security research
+- Bug bounty hunting (with written permission)
+- Intelligence agency operations
+- Military cyber warfare
+- Corporate threat intelligence
+- Penetration testing (with contract)
 
-### API Key Configuration
-Set environment variables:
-```bash
-export SHODAN_API_KEY="your_key"
-export VIRUSTOTAL_API_KEY="your_key"
-export HUNTER_API_KEY="your_key"
-```
+**Unauthorized use against systems without explicit permission is ILLEGAL and violates:**
+- Computer Fraud and Abuse Act (CFAA) - USA
+- Computer Misuse Act - UK
+- Information Technology Act - India
+- Similar laws worldwide
 
-Or configure via UI (coming soon).
+**Users are solely responsible for compliance with applicable laws.**
 
 ---
 
-## 📊 Comparison: Sentinel Core vs Commercial Tools
+## 📞 SUPPORT & CONTRIBUTION
 
-| Feature | Sentinel Core | Maltego | Recorded Future | SpiderFoot |
-|---------|--------------|---------|-----------------|------------|
-| **Price** | FREE | $2,000+/yr | $50,000+/yr | Free/$$ |
-| **Custom Scripts** | ✅ Full Python | ❌ Limited | ❌ No | ⚠️ Limited |
-| **Kali Tools** | ✅ 20+ Native | ❌ Transforms | ❌ None | ⚠️ Some |
-| **Async Workers** | ✅ 5 Parallel | ❌ Sequential | ✅ Cloud | ⚠️ Limited |
-| **STIX Export** | ✅ 2.1 Standard | ⚠️ Proprietary | ✅ Yes | ⚠️ Partial |
-| **Report Formats** | ✅ 4 Types | ⚠️ PDF | ✅ Multiple | ⚠️ Limited |
-| **Graph Analysis** | ✅ Maltego-style | ✅ Excellent | ⚠️ Basic | ⚠️ Basic |
-| **Offline Mode** | ✅ Full Support | ⚠️ Limited | ❌ Cloud Only | ✅ Yes |
+**Developer:** Syed Abrar (Cyb3rvolt3x)  
+**Organization:** SentinelReign.com  
 
----
-
-## 🌟 Roadmap
-
-### Phase 1: Core Enhancement ✅
-- [x] Real module execution engine
-- [x] Async task queue with workers
-- [x] Circuit breakers & retries
-- [x] Dynamic script engine
-- [x] Kali/Parrot tool integration
-- [x] Case ownership security
-
-### Phase 2: Intelligence Model ✅
-- [x] Normalized entity schema
-- [x] Relationship mapping
-- [x] Confidence scoring
-- [x] STIX 2.1 export
-- [x] Evidence chain of custody
-
-### Phase 3: Advanced Features (In Progress)
-- [ ] PostgreSQL backend support
-- [ ] Redis queue for scale
-- [ ] Multi-user collaboration
-- [ ] ATT&CK mapping
-- [ ] MISP integration
-- [ ] TAXII client/server
-- [ ] Playbook automation
-
-### Phase 4: Enterprise Ready
-- [ ] Docker/Kubernetes deployment
-- [ ] High availability clustering
-- [ ] Role-based access control (RBAC)
-- [ ] Two-factor authentication
-- [ ] API rate limiting
-- [ ] Threat intelligence sharing
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from the security community! Please ensure:
-1. All code follows ethical guidelines
-2. Only legal, public data sources are used
-3. Proper documentation is included
-4. Security best practices are maintained
-
-### How to Contribute
+### Contributing
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+2. Create feature branch
+3. Add tests
+4. Submit pull request
+
+### Reporting Issues
+- Use GitHub Issues
+- Include reproduction steps
+- Specify environment (OS, Python version, tools installed)
 
 ---
 
-## 📄 License
+## 🗺️ ROADMAP
 
-This project is provided for **educational and authorized security research purposes only**. 
+### Phase 1 (Current)
+- ✅ 8 built-in OSINT modules
+- ✅ 20+ tool integrations
+- ✅ Async task queue
+- ✅ Graph analysis
+- ✅ Report generation
+- ✅ Custom scripting
 
-Users are solely responsible for complying with all applicable laws and regulations in their jurisdiction.
+### Phase 2 (In Progress)
+- 🔄 Real-time collaboration
+- 🔄 WebSocket live updates
+- 🔄 Advanced correlation engine
+- 🔄 ATT&CK mapping
+- 🔄 MISP integration
 
-**Developer**: Syed Abrar (Cyb3rvolt3x)  
-**Organization**: SentinelReign.com  
-**Classification**: ELITE TIER  
-
----
-
-## 🏆 Hall of Fame
-
-Special thanks to:
-- Intelligence agencies providing operational feedback
-- Bug bounty hunters testing at scale
-- Red team operators pushing boundaries
-- SOC analysts validating workflows
-
----
-
-## 📞 Contact & Support
-
-- **Website**: [SentinelReign.com](https://sentinelreign.com)
-- **Developer**: Syed Abrar (@Cyb3rvolt3x)
-- **Issues**: GitHub Issues
-- **Discussions**: GitHub Discussions
+### Phase 3 (Planned)
+- ⏳ STIX/TAXII server
+- ⏳ OpenCTI integration
+- ⏳ ML-based anomaly detection
+- ⏳ Automated playbook execution
+- ⏳ Distributed worker scaling
 
 ---
 
-**⚔️ Remember**: This is a weapon of mass reconnaissance. Use it responsibly, ethically, and legally. The difference between a hero and a criminal is authorization.
+## 📚 REFERENCES
+
+- [MITRE ATT&CK Framework](https://attack.mitre.org)
+- [STIX 2.1 Specification](https://oasis-open.github.io/cti-documentation/)
+- [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
+- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
 
 ---
 
-*Built with 🖤 by the security community, for the security community.*
+**© 2024 SentinelReign.com | Developed by Syed Abrar (Cyb3rvolt3x)**
+
+*"The best defense is intelligent offense."*
