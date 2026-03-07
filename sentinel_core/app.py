@@ -27,7 +27,10 @@ import bcrypt
 # Initialize Flask App
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
-DATABASE = 'db/sentinel.db'
+
+# Use absolute path for database (fixes relative path issue)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, 'db', 'sentinel.db')
 
 # Import engine components
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -300,8 +303,23 @@ def run_module():
     """Submit a module execution task to the async queue"""
     module_id = request.form.get('module_id')
     target = request.form.get('target')
-    case_id = int(request.form.get('case_id'))
-    priority = int(request.form.get('priority', 5))
+    try:
+        case_id = int(request.form.get('case_id'))
+        priority = int(request.form.get('priority', 5))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid case_id or priority'}), 400
+    
+    # CASE OWNERSHIP CHECK - Critical security control
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT id FROM cases WHERE id = ? AND user_id = ?", (case_id, session['user_id']))
+    if not c.fetchone():
+        conn.close()
+        log_audit(session['user_id'], 'UNAUTHORIZED_MODULE_RUN', 
+                 f'User attempted to run module on unauthorized case {case_id}', 
+                 request.remote_addr)
+        return jsonify({'error': 'Access denied: Case not found or you do not own it'}), 403
+    conn.close()
     
     # Validate module exists
     module_info = registry.get_module(module_id)
@@ -311,7 +329,8 @@ def run_module():
     # Check required secrets
     if not registry.has_required_secrets(module_id):
         missing = [s for s in module_info['metadata'].required_secrets if s not in registry.secrets]
-        return jsonify({'error': f'Missing required secrets: {missing}'}), 400
+        if missing:
+            return jsonify({'error': f'Missing required secrets: {missing}. Please configure API keys.'}), 400
     
     # Submit to task queue
     task_id = task_queue.submit_task(
@@ -375,10 +394,29 @@ def kali_tools_status():
 def run_comprehensive_recon():
     """Run comprehensive reconnaissance using all available Kali tools"""
     domain = request.form.get('domain')
-    case_id = int(request.form.get('case_id'))
+    try:
+        case_id = int(request.form.get('case_id'))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid case_id'}), 400
     
     if not domain:
         return jsonify({'error': 'Domain required'}), 400
+    
+    # CASE OWNERSHIP CHECK - Critical security control
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT id FROM cases WHERE id = ? AND user_id = ?", (case_id, session['user_id']))
+    if not c.fetchone():
+        conn.close()
+        log_audit(session['user_id'], 'UNAUTHORIZED_RECON', 
+                 f'User attempted comprehensive recon on unauthorized case {case_id}', 
+                 request.remote_addr)
+        return jsonify({'error': 'Access denied: Case not found or you do not own it'}), 403
+    conn.close()
+    
+    # Verify the kali_comprehensive executor is registered
+    if 'kali_comprehensive' not in task_queue.executors:
+        return jsonify({'error': 'Comprehensive recon module not initialized. Please restart the server.'}), 500
     
     # This is a long-running operation, submit to queue
     task_id = task_queue.submit_task(
@@ -406,9 +444,9 @@ def run_comprehensive_recon():
              f'Started comprehensive recon on {domain}', request.remote_addr)
     
     return jsonify({
-        'status': 'started',
+        'status': 'queued',
         'task_id': task_id,
-        'message': f'Comprehensive reconnaissance started for {domain}'
+        'message': f'Comprehensive reconnaissance queued for {domain}'
     })
 
 @app.route('/api/script/execute', methods=['POST'])
@@ -418,10 +456,25 @@ def execute_custom_script():
     script_name = request.form.get('script_name')
     code = request.form.get('code')  # Raw code for ad-hoc execution
     target = request.form.get('target')
-    case_id = int(request.form.get('case_id'))
+    try:
+        case_id = int(request.form.get('case_id'))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid case_id'}), 400
     
     if not target:
         return jsonify({'error': 'Target required'}), 400
+    
+    # CASE OWNERSHIP CHECK - Critical security control
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT id FROM cases WHERE id = ? AND user_id = ?", (case_id, session['user_id']))
+    if not c.fetchone():
+        conn.close()
+        log_audit(session['user_id'], 'UNAUTHORIZED_SCRIPT_EXEC', 
+                 f'User attempted script execution on unauthorized case {case_id}', 
+                 request.remote_addr)
+        return jsonify({'error': 'Access denied: Case not found or you do not own it'}), 403
+    conn.close()
     
     # Execute the script
     result = script_engine.execute_script(
@@ -517,10 +570,29 @@ def execute_single_tool():
 def run_full_recon_chain():
     """Run full reconnaissance chain using all available tools"""
     target = request.form.get('target')
-    case_id = int(request.form.get('case_id'))
+    try:
+        case_id = int(request.form.get('case_id'))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid case_id'}), 400
     
     if not target:
         return jsonify({'error': 'Target required'}), 400
+    
+    # CASE OWNERSHIP CHECK - Critical security control
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT id FROM cases WHERE id = ? AND user_id = ?", (case_id, session['user_id']))
+    if not c.fetchone():
+        conn.close()
+        log_audit(session['user_id'], 'UNAUTHORIZED_FULL_RECON', 
+                 f'User attempted full recon on unauthorized case {case_id}', 
+                 request.remote_addr)
+        return jsonify({'error': 'Access denied: Case not found or you do not own it'}), 403
+    conn.close()
+    
+    # Verify executor is registered
+    if 'full_recon_chain' not in task_queue.executors:
+        return jsonify({'error': 'Full recon chain module not initialized. Please restart the server.'}), 500
     
     # Submit to async queue (long running)
     task_id = task_queue.submit_task(
