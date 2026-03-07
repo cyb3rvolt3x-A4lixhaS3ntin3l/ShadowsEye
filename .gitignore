@@ -1,70 +1,51 @@
-```
-# Logs
+# Dependencies
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and temp files
 *.log
-
-# Database
-sentinel_core/db/*.db
-
-# Cookies
-sentinel_core/cookies.txt
+*.tmp
+*.swp
+*.swo
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Dependencies
-venv/
-.venv/
-__pycache__/
-*.pyc
-*$py.class
-*.so
-.Python
-env/
-.venv/
-venv.bak/
-ENV/
-
-# Build artifacts
-build/
-dist/
-*.egg-info/
-
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# OS
-.DS_Store
-Thumbs.db
+# Build artifacts
+dist/
+build/
+target/
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
 
 # Python specific
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
-.venv/
-venv.bak/
-ENV/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.git/
-.mypy_cache/
-.pytest_cache/
-.hypothesis/
+*.egg-info/
+.egg/
 
-# Security logs
-sentinel_core/logs/
-```
+# OS generated files
+.DS_Store
+Thumbs.db
+*.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+iTunes_Control/
+@__thumb*/
