@@ -43,18 +43,20 @@ The world's most advanced open-source intelligence platform designed for:
 - **Automated Recon Chains**: Full-spectrum reconnaissance automation
 - **Multi-Format Reports**: HTML, STIX 2.1, JSON, PDF exports
 
-### 📊 Built-in OSINT Modules (8 Total)
+### 📊 Built-in OSINT Modules (8 Total) - ALL REGISTERED
 
-| Module | Description | API Key Required |
-|--------|-------------|------------------|
-| **DNS Enumeration** | DNS records & subdomain discovery | No |
-| **WHOIS Lookup** | Domain registration information | No |
-| **SSL Analysis** | Certificate details & validity | No |
-| **Certificate Transparency** | Subdomain discovery via CT logs | No |
-| **Shodan Search** | IoT device & service discovery | Yes (free tier) |
-| **VirusTotal Analysis** | Malware & URL reputation | Yes (free tier) |
-| **Wayback Machine** | Historical web archives | No |
-| **Hunter.io** | Professional email discovery | Yes (free tier) |
+| Module | Description | API Key Required | Status |
+|--------|-------------|------------------|--------|
+| **DNS Enumeration** | DNS records & subdomain discovery | No | ✅ Registered |
+| **WHOIS Lookup** | Domain registration information | No | ✅ Registered |
+| **SSL Analysis** | Certificate details & validity | No | ✅ Registered |
+| **Certificate Transparency** | Subdomain discovery via CT logs | No | ✅ Registered |
+| **Shodan Search** | IoT device & service discovery | Yes (free tier) | ✅ Registered |
+| **VirusTotal Analysis** | Malware & URL reputation | Yes (free tier) | ✅ Registered |
+| **Wayback Machine** | Historical web archives | No | ✅ Registered |
+| **Hunter.io** | Professional email discovery | Yes (free tier) | ✅ Registered |
+
+**All 8 modules are automatically registered on startup via ShadowEye launcher.**
 
 ### 🛠️ Integrated Kali/Parrot Tools (20+)
 
@@ -208,29 +210,30 @@ sentinel_core/
 ├── shadowseye.py          # Elite launcher (USE THIS!)
 ├── app.py                 # Flask application core
 ├── requirements.txt       # Python dependencies
-├── db/                    # SQLite database
+├── db/                    # SQLite database (absolute path)
 │   └── sentinel.db
+├── evidence/              # Forensic-grade report storage
 ├── engine/                # Core execution engine
 │   ├── __init__.py
 │   ├── module_registry.py    # Module metadata & secrets
-│   ├── task_queue.py         # Async worker pool
+│   ├── task_queue.py         # Async worker pool (5 workers)
 │   └── script_engine.py      # Dynamic script execution
 ├── models/                # Data models
 │   └── intelligence.py       # Entity/relationship schema
-├── modules/               # OSINT modules
+├── modules/               # OSINT modules (8 total)
 │   ├── dns_module.py
 │   ├── whois_module.py
 │   ├── ssl_module.py
 │   ├── crtsh_module.py
-│   ├── shodan_module.py      # NEW
-│   ├── virustotal_module.py  # NEW
-│   ├── wayback_module.py     # NEW
-│   └── hunter_module.py      # NEW
+│   ├── shodan_module.py      # ✅ Registered
+│   ├── virustotal_module.py  # ✅ Registered
+│   ├── wayback_module.py     # ✅ Registered
+│   └── hunter_module.py      # ✅ Registered
 ├── integrations/          # External tool integration
 │   ├── kali_tools.py         # Kali/Parrot tools
 │   └── advanced_tools.py     # 20+ tool registry
 ├── reports/               # Report generation
-│   └── report_generator.py   # HTML/STIX/JSON/PDF
+│   └── report_generator.py   # HTML/STIX/JSON (evidence dir)
 ├── templates/             # HTML templates
 │   ├── login.html
 │   ├── dashboard.html
@@ -239,8 +242,7 @@ sentinel_core/
 ├── static/                # Static assets
 │   ├── css/
 │   └── js/
-├── user_modules/          # Custom user scripts
-└── reports/               # Generated reports
+└── user_modules/          # Custom user scripts (auto-created)
 ```
 
 ---

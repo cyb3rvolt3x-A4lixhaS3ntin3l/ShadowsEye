@@ -415,7 +415,7 @@ def run_comprehensive_recon():
     conn.close()
     
     # Verify the kali_comprehensive executor is registered
-    if 'kali_comprehensive' not in task_queue.executors:
+    if 'kali_comprehensive' not in task_queue.module_executors:
         return jsonify({'error': 'Comprehensive recon module not initialized. Please restart the server.'}), 500
     
     # This is a long-running operation, submit to queue
@@ -591,7 +591,7 @@ def run_full_recon_chain():
     conn.close()
     
     # Verify executor is registered
-    if 'full_recon_chain' not in task_queue.executors:
+    if 'full_recon_chain' not in task_queue.module_executors:
         return jsonify({'error': 'Full recon chain module not initialized. Please restart the server.'}), 500
     
     # Submit to async queue (long running)
@@ -681,9 +681,11 @@ def generate_report(case_id):
 @app.route('/api/report/download/<filename>')
 @login_required
 def download_report(filename):
-    """Download a generated report"""
+    """Download a generated report from evidence directory"""
     from flask import send_file
-    filepath = os.path.join(report_generator.templates_path, filename)
+    # Use absolute path to evidence directory (forensic-grade storage)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(base_dir, 'evidence', filename)
     if os.path.exists(filepath):
         return send_file(filepath, as_attachment=True)
     return jsonify({'error': 'File not found'}), 404

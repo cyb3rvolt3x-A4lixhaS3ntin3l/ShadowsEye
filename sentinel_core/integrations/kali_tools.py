@@ -365,6 +365,14 @@ class KaliToolsIntegration:
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
     
+    def run_comprehensive_recon(self, domain: str) -> Dict[str, Any]:
+        """
+        Run comprehensive reconnaissance using all available tools
+        Returns aggregated results
+        Alias for comprehensive_recon for API compatibility
+        """
+        return self.comprehensive_recon(domain)
+    
     def comprehensive_recon(self, domain: str) -> Dict[str, Any]:
         """
         Run comprehensive reconnaissance using all available tools

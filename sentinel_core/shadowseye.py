@@ -211,15 +211,15 @@ def main():
             task_queue.register_executor(module_id, module_data['executor'])
     
     # Register advanced tool executors
-    def full_recon_executor(task):
-        """Execute full reconnaissance chain"""
-        return tool_registry.run_recon_chain(task.target)
+    def full_recon_executor(target):
+        """Execute full reconnaissance chain - expects string target"""
+        return tool_registry.run_recon_chain(target)
     
     task_queue.register_executor('full_recon_chain', full_recon_executor)
     
-    def kali_comprehensive_executor(task):
-        """Execute comprehensive Kali tools scan"""
-        return kali_tools.run_comprehensive_recon(task.target)
+    def kali_comprehensive_executor(target):
+        """Execute comprehensive Kali tools scan - expects string target"""
+        return kali_tools.run_comprehensive_recon(target)
     
     task_queue.register_executor('kali_comprehensive', kali_comprehensive_executor)
     
