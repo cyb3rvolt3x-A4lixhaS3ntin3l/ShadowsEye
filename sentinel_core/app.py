@@ -708,7 +708,20 @@ def tools_list():
     # Custom tools
     custom_tools = CustomTool.query.filter_by(is_active=True).all()
     
-    categories = ['recon', 'web', 'network', 'vuln', 'forensics']
+    # Organize tools by category
+    categories = {
+        'recon': [t['name'] for t in builtin_tools if t['category'] == 'recon'],
+        'web': [t['name'] for t in builtin_tools if t['category'] == 'web'],
+        'network': [t['name'] for t in builtin_tools if t['category'] == 'network'],
+        'vuln': [t['name'] for t in builtin_tools if t['category'] == 'vuln'],
+        'forensics': [t['name'] for t in builtin_tools if t['category'] == 'forensics']
+    }
+    
+    # Add custom tools to their categories
+    for tool in custom_tools:
+        if tool.category not in categories:
+            categories[tool.category] = []
+        categories[tool.category].append(tool.name)
     
     return render_template('tools.html', 
                          builtin_tools=builtin_tools,
@@ -1188,11 +1201,23 @@ def settings():
     virustotal_key = get_api_key('virustotal')
     hunter_key = get_api_key('hunter')
     
+    # Build settings dict for template
+    settings = {
+        'nvidia_api_key': nvidia_key or '',
+        'shodan_api_key': shodan_key or '',
+        'virustotal_api_key': virustotal_key or '',
+        'hunter_api_key': hunter_key or '',
+        'ai_model': session.get('ai_model', 'moonshotai/kimi-k2.5'),
+        'agentic_mode': session.get('agentic_mode', False),
+        'theme': session.get('theme', 'dark')
+    }
+    
     return render_template('settings.html',
                          nvidia_configured=bool(nvidia_key),
                          shodan_configured=bool(shodan_key),
                          virustotal_configured=bool(virustotal_key),
-                         hunter_configured=bool(hunter_key))
+                         hunter_configured=bool(hunter_key),
+                         settings=settings)
 
 
 # ============================================================================
