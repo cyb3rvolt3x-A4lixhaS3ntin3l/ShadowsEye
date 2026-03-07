@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Create Custom Tool - Sentinel Core{% endblock %}
+{% block header_title %}Create Custom Tool{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-tools"></i> Create Custom Tool</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('tool_create') }}">
+            <div class="form-group">
+                <label for="name">Tool Name *</label>
+                <input type="text" class="form-control" id="name" name="name" required 
+                       placeholder="e.g., Advanced Port Scanner">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3"
+                          placeholder="Describe what this tool does..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select class="form-control" id="category" name="category">
+                    <option value="recon">Reconnaissance</option>
+                    <option value="web">Web Application</option>
+                    <option value="network">Network</option>
+                    <option value="vuln">Vulnerability Assessment</option>
+                    <option value="forensics">Forensics</option>
+                    <option value="password">Password Attacks</option>
+                    <option value="wireless">Wireless</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="language">Script Language</label>
+                <select class="form-control" id="language" name="language">
+                    <option value="bash">Bash/Shell</option>
+                    <option value="python">Python</option>
+                    <option value="php">PHP</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="command_template">Command Template *</label>
+                <textarea class="form-control" id="command_template" name="command_template" rows="6" required
+                          placeholder="Enter command with {{param}} placeholders&#10;Example: nmap -sV -p {{ports}} {{target}}"></textarea>
+                <small class="form-text">Use {{param_name}} for parameters that will be filled at runtime</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Parameters (JSON format)</label>
+                <textarea class="form-control" id="parameters" name="parameters" rows="4"
+                          placeholder='[{"name": "target", "type": "string", "required": true}, {"name": "ports", "type": "string", "default": "1-1000"}]'></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Create Tool
+                </button>
+                <a href="{{ url_for('tools') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

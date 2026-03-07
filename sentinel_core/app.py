@@ -31,7 +31,7 @@ import bcrypt
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(32).hex()
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
 # Use absolute path for database
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(BASE_DIR, "db", "sentinel.db")}'
@@ -450,8 +450,8 @@ def run_scan(case_id, entity_id, module_name):
             results = analyze_ssl(entity.value)
             
         elif module_name == 'crtsh':
-            from modules.crtsh_module import search_crtsh
-            results = search_crtsh(entity.value)
+            from modules.crtsh_module import query_crtsh
+            results = query_crtsh(entity.value)
             
         elif module_name == 'shodan':
             api_key = get_api_key('shodan')
@@ -464,19 +464,25 @@ def run_scan(case_id, entity_id, module_name):
             api_key = get_api_key('virustotal')
             if not api_key:
                 return jsonify({'error': 'VirusTotal API key not configured'}), 400
-            from modules.virustotal_module import analyze_virustotal
-            results = analyze_virustotal(entity.value, api_key)
+            from modules.virustotal_module import analyze_url, analyze_domain, analyze_hash
+            # Auto-detect entity type and call appropriate function
+            if entity.entity_type == 'url':
+                results = analyze_url(entity.value, api_key)
+            elif entity.entity_type == 'hash':
+                results = analyze_hash(entity.value, api_key)
+            else:  # domain, ip
+                results = analyze_domain(entity.value, api_key)
             
         elif module_name == 'wayback':
-            from modules.wayback_module import search_wayback
-            results = search_wayback(entity.value)
+            from modules.wayback_module import get_wayback_snapshots
+            results = get_wayback_snapshots(entity.value)
             
         elif module_name == 'hunter':
             api_key = get_api_key('hunter')
             if not api_key:
                 return jsonify({'error': 'Hunter.io API key not configured'}), 400
-            from modules.hunter_module import search_hunter
-            results = search_hunter(entity.value, api_key)
+            from modules.hunter_module import domain_search
+            results = domain_search(entity.value, api_key)
             
         else:
             return jsonify({'error': f'Unknown module: {module_name}'}), 400
@@ -794,7 +800,7 @@ def run_kali_tool(tool_name):
     target = request.form.get('target')
     options = request.form.get('options', '')
     
-    allowed_tools = ['nmap', 'whois', 'dig', 'nslookup', 'sslscan', 'subfinder', 'httpx', 'nuclei', 'nikto', 'gobuster']
+    allowed_tools = ['nmap', 'whois', 'dig', 'nslookup', 'sslscan', 'subfinder', 'httpx', 'nuclei', 'nikto', 'gobuster', 'amass', 'sqlmap', 'theHarvester', 'dnsrecon', 'whatweb', 'wafw00f', 'dirb', 'wfuzz', 'hydra', 'john', 'hashcat', 'metasploit', 'burpsuite', 'zap', 'masscan', 'ffuf', 'feroxbuster', 'rustscan', 'naabu', 'httpx-toolkit']
     
     if tool_name not in allowed_tools:
         return jsonify({'error': f'Tool {tool_name} not allowed'}), 400
@@ -855,10 +861,10 @@ def terminal_execute():
     
     # Security whitelist
     allowed_commands = [
-        'nmap', 'whois', 'dig', 'nslookup', 'dig', 'host',
+        'nmap', 'whois', 'dig', 'nslookup', 'host', 'resolvectl',
         'curl', 'wget', 'grep', 'awk', 'sed', 'cat', 'less', 'head', 'tail',
         'find', 'ls', 'pwd', 'date', 'echo', 'wc', 'sort', 'uniq',
-        'sslscan', 'testssl', 'subfinder', 'amass', 'httpx', 'nuclei', 'nikto', 'gobuster'
+        'sslscan', 'testssl', 'subfinder', 'amass', 'httpx', 'nuclei', 'nikto', 'gobuster', 'sqlmap', 'theHarvester', 'dnsrecon', 'whatweb', 'wafw00f', 'dirb', 'wfuzz', 'masscan', 'ffuf', 'feroxbuster', 'rustscan', 'naabu', 'curl', 'wget'
     ]
     
     # Parse command
@@ -1294,12 +1300,16 @@ def init_db():
         # Create admin user if not exists
         admin = User.query.filter_by(username='admin').first()
         if not admin:
+            # Generate secure random password for initial admin
+            import secrets
+            initial_password = secrets.token_urlsafe(16)
             admin = User(
                 username='admin',
                 email='admin@sentinel.local',
-                password_hash=generate_password_hash('admin123'),
+                password_hash=generate_password_hash(initial_password),
                 role='admin'
             )
+            logger.info(f"Initial admin password (CHANGE IMMEDIATELY): {initial_password}")
             db.session.add(admin)
             db.session.commit()
             logger.info("Admin user created: admin / admin123")
