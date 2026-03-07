@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Live Terminal - Sentinel Core{% endblock %}
+{% block header_title %}Live Terminal{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-terminal"></i> Live Command Terminal</h3>
+        <div class="header-actions">
+            <span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Commands are logged and restricted</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="terminal-container" style="background: #1a1a2e; border-radius: 8px; padding: 20px; font-family: 'Courier New', monospace;">
+            <div id="terminalOutput" style="height: 400px; overflow-y: auto; color: #00ff00; white-space: pre-wrap;">
+                <div>Welcome to Sentinel Core Terminal</div>
+                <div>Type your command below. Available tools: nmap, whois, dig, nslookup, sslscan, subfinder, httpx, nuclei, nikto, gobuster, amass, sqlmap</div>
+                <div>--------------------------------------------------</div>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <input type="text" id="commandInput" class="form-control" 
+                       placeholder="Enter command (e.g., nmap -sV example.com)" 
+                       onkeypress="if(event.key==='Enter') executeCommand()"
+                       style="flex: 1; background: #0f0f1a; color: #00ff00; border: 1px solid #333;">
+                <button onclick="executeCommand()" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Execute
+                </button>
+                <button onclick="clearTerminal()" class="btn btn-secondary">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h4>Quick Commands</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                <button onclick="setCommand('nmap -sV -p- {{target}}')" class="btn btn-sm btn-outline">nmap Full Scan</button>
+                <button onclick="setCommand('whois {{target}}')" class="btn btn-sm btn-outline">WHOIS Lookup</button>
+                <button onclick="setCommand('dig ANY {{target}}')" class="btn btn-sm btn-outline">DNS Records</button>
+                <button onclick="setCommand('subfinder -d {{target}}')" class="btn btn-sm btn-outline">Subdomain Enum</button>
+                <button onclick="setCommand('httpx -u {{target}}')" class="btn btn-sm btn-outline">HTTP Probe</button>
+                <button onclick="setCommand('nuclei -u {{target}}')" class="btn btn-sm btn-outline">Nuclei Scan</button>
+                <button onclick="setCommand('gobuster dir -u {{target}} -w /usr/share/wordlists/dirb/common.txt')" class="btn btn-sm btn-outline">Gobuster Dir</button>
+                <button onclick="setCommand('amass enum -d {{target}}')" class="btn btn-sm btn-outline">Amass Enum</button>
+                <button onclick="setCommand('sqlmap -u {{target}} --batch')" class="btn btn-sm btn-outline">SQLMap Scan</button>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h4>Allowed Tools</h4>
+            <div class="tool-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
+                <div class="badge badge-info">nmap</div>
+                <div class="badge badge-info">whois</div>
+                <div class="badge badge-info">dig</div>
+                <div class="badge badge-info">nslookup</div>
+                <div class="badge badge-info">sslscan</div>
+                <div class="badge badge-info">subfinder</div>
+                <div class="badge badge-info">httpx</div>
+                <div class="badge badge-info">nuclei</div>
+                <div class="badge badge-info">nikto</div>
+                <div class="badge badge-info">gobuster</div>
+                <div class="badge badge-info">amass</div>
+                <div class="badge badge-info">sqlmap</div>
+                <div class="badge badge-info">theHarvester</div>
+                <div class="badge badge-info">dnsrecon</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+.badge-info { background: #17a2b8; color: white; }
+.badge-warning { background: #ffc107; color: #000; }
+.btn-outline { background: transparent; border: 1px solid #6c757d; color: #6c757d; }
+.btn-outline:hover { background: #6c757d; color: white; }
+</style>
+
+<script>
+let currentCase = null;
+
+function setCommand(cmd) {
+    // Replace {{target}} with actual target if in case context
+    const target = prompt('Enter target (domain/IP/URL):');
+    if (target) {
+        document.getElementById('commandInput').value = cmd.replace('{{target}}', target);
+    }
+}
+
+function clearTerminal() {
+    document.getElementById('terminalOutput').innerHTML = '<div>Terminal cleared</div>';
+}
+
+async function executeCommand() {
+    const input = document.getElementById('commandInput');
+    const output = document.getElementById('terminalOutput');
+    const command = input.value.trim();
+    
+    if (!command) return;
+    
+    // Add command to output
+    output.innerHTML += `<div style="color: #fff;">$ ${command}</div>`;
+    input.value = '';
+    
+    try {
+        const response = await fetch('/api/terminal/execute', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                command: command,
+                case_id: currentCase
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            output.innerHTML += `<div>${data.output}</div>`;
+        } else {
+            output.innerHTML += `<div style="color: #ff4444;">Error: ${data.error}</div>`;
+        }
+    } catch (error) {
+        output.innerHTML += `<div style="color: #ff4444;">Error: ${error.message}</div>`;
+    }
+    
+    output.scrollTop = output.scrollHeight;
+}
+</script>
+{% endblock %}

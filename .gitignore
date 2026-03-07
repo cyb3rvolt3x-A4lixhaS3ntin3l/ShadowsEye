@@ -6,12 +6,12 @@ __pycache__/
 *.pyd
 
 # Database
-*.db
+sentinel_core/db/sentinel.db
 
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
 # Logs
 *.log
@@ -21,14 +21,24 @@ __pycache__/
 *.swp
 *.swo
 
+# Editors
+.vscode/
+.idea/
+
+# Dependencies
+.venv/
+venv/
+node_modules/
+
+# Build artifacts
+dist/
+build/
+target/
+
 # Coverage
 .coverage
 coverage/
 htmlcov/
-
-# Editors
-.vscode/
-.idea/
 
 # OS
 .DS_Store
