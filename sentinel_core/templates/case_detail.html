@@ -169,9 +169,9 @@
             document.querySelectorAll('.actions-menu').forEach(m => m.remove());
             
             if (isAI) {
-                addAiMessage(`Analyzing ${target} with Kimi AI...`);
+                addAiMessage(`🤖 Analyzing ${target} with Kimi AI...`);
             } else {
-                addAiMessage(`Running ${toolId} on ${target}...`);
+                addAiMessage(`🔧 Running ${toolId} on ${target}...`);
             }
 
             const res = await fetch('/api/execute_tool', {
@@ -182,8 +182,22 @@
             const data = await res.json();
             
             if (data.result) {
-                addAiMessage(`<strong>Result:</strong><br>${data.result.replace(/\n/g, '<br>')}`);
+                // Format JSON output nicely
+                let formattedResult = data.result;
+                try {
+                    const parsed = JSON.parse(data.result);
+                    formattedResult = '<pre style="background:#1e293b;padding:10px;border-radius:5px;overflow-x:auto;">' + 
+                        JSON.stringify(parsed, null, 2) + '</pre>';
+                } catch(e) {
+                    formattedResult = data.result.replace(/\n/g, '<br>');
+                }
+                
+                const statusIcon = data.success !== false ? '✅' : '❌';
+                addAiMessage(`${statusIcon} <strong>${isAI ? 'AI Analysis' : toolId.toUpperCase()} Result:</strong><br>${formattedResult}`);
             }
+            
+            // Refresh page to show new entity data if needed
+            setTimeout(() => location.reload(), 500);
         }
 
         async function askAI() {

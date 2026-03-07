@@ -4,73 +4,23 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.py~
-*.py.class
-*.py.obj
-*.py.out
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Environment
-.env
-.env.local
-*.env.*
-.env~
 
 # Dependencies
 venv/
 .venv/
-.env/
-pip-log.txt
-pip-selfcheck.json
-.tox/
-.coverage
-.coverage.*
-
-# Build and distribution
-build/
-dist/
-*.egg
-*.egg-info/
-.eggs/
-.installed.cfg
-*.egg-link
+.env
+.env.local
+*.env.*
 
 # Logs
 *.log
-*.out
-*.pid
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-Thumbs.db:encryptable
-
-# IDE and editor files
+# Editors
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-\#*\#
-.\#*
 
-# Testing
-.pytest_cache/
-.coverage/
-htmlcov/
-.nox/
-.cover/
-
-# JSON and data files (if not source code)
-*.json.bak
-*.json~
+# Build artifacts
+dist/
+build/
+target/
 ```

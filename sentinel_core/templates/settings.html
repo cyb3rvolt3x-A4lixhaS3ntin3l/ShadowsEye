@@ -71,13 +71,66 @@
             
             <div class="form-group">
                 <label>NVIDIA API Key</label>
-                <input type="password" id="apiKey" placeholder="nvapi-..." value="{{ settings.get('nvidia_api_key', '')[:10] }}{% if settings.get('nvidia_api_key') %}...{% endif %}">
+                <input type="password" id="apiKey" placeholder="nvapi-..." value="">
                 <div class="api-info">
                     <strong><i class="fas fa-info-circle"></i> API Configuration:</strong><br>
                     Endpoint: <code>https://integrate.api.nvidia.com/v1/chat/completions</code><br>
                     Model: <code>moonshotai/kimi-k2.5</code><br>
                     Your API key is stored locally and never sent to external servers except NVIDIA NIM.
                 </div>
+                {% if settings.get('nvidia_api_key') %}
+                <div style="margin-top:0.5rem;color:#22c55e;"><i class="fas fa-check"></i> API key is configured</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label>AI Model</label>
+                <select id="aiModel">
+                    <option value="moonshotai/kimi-k2.5" {% if settings.get('model') == 'moonshotai/kimi-k2.5' %}selected{% endif %}>Kimi K2.5 (Recommended)</option>
+                </select>
+            </div>
+
+            <div class="toggle-row">
+                <div class="toggle-label">
+                    <strong>Agentic Mode</strong>
+                    <small>Allow AI to suggest and execute commands automatically</small>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="agenticMode" {% if settings.get('agentic_mode') %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <div class="toggle-label">
+                    <strong>Memory & Context</strong>
+                    <small>Enable conversation history and long-term memory</small>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="memoryEnabled" {% if settings.get('memory_enabled', true) %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button onclick="saveSettings()" class="btn btn-primary"><i class="fas fa-save"></i> Save Configuration</button>
+        </div>
+
+        <div class="settings-section">
+            <h2><i class="fas fa-database"></i> External Intelligence APIs</h2>
+            <p style="color:#94a3b8;margin-bottom:1.5rem;">Configure third-party APIs for enhanced reconnaissance capabilities.</p>
+            
+            <div class="form-group">
+                <label>Shodan API Key</label>
+                <input type="password" id="shodanApiKey" placeholder="Enter Shodan API key" value="">
+                <small style="color:#64748b;">Get your key at <a href="https://account.shodan.io/" target="_blank" style="color:#3b82f6;">shodan.io</a></small>
+            </div>
+            
+            <div class="form-group">
+                <label>VirusTotal API Key</label>
+                <input type="password" id="virustotalApiKey" placeholder="Enter VirusTotal API key" value="">
+                <small style="color:#64748b;">Get your key at <a href="https://www.virustotal.com/" target="_blank" style="color:#3b82f6;">virustotal.com</a></small>
+            </div>
+        </div>
                 <div id="apiStatus" class="status-badge" style="display:none;"></div>
             </div>
 
