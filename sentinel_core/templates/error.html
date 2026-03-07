@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error {{ code }} - Sentinel Core</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f23; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
+        h1 { color: #ff4444; font-size: 72px; margin-bottom: 20px; }
+        p { color: #888; font-size: 18px; }
+        a { color: #00d9ff; text-decoration: none; margin-top: 20px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>{{ code }}</h1>
+        <p>{{ error }}</p>
+        <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    </div>
+</body>
+</html>

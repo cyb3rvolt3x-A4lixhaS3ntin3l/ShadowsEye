@@ -1,0 +1,54 @@
+{
+  "modules": {
+    "DNS Enumeration": {
+      "file": "dns_module.py",
+      "api_required": false,
+      "status": "registered",
+      "registered_at": "2026-03-07T11:53:04.816749"
+    },
+    "WHOIS Lookup": {
+      "file": "whois_module.py",
+      "api_required": false,
+      "status": "registered",
+      "registered_at": "2026-03-07T11:53:04.827374"
+    },
+    "SSL Analysis": {
+      "file": "ssl_module.py",
+      "api_required": false,
+      "status": "registered",
+      "registered_at": "2026-03-07T11:53:04.838960"
+    },
+    "Certificate Transparency": {
+      "file": "crtsh_module.py",
+      "api_required": false,
+      "status": "registered",
+      "registered_at": "2026-03-07T11:53:04.847831"
+    },
+    "Shodan Search": {
+      "file": "shodan_module.py",
+      "api_required": true,
+      "status": "registered",
+      "registered_at": "2026-03-07T11:53:04.856240"
+    },
+    "VirusTotal Analysis": {
+      "file": "virustotal_module.py",
+      "api_required": true,
+      "status": "registered",
+      "registered_at": "2026-03-07T11:53:04.864354"
+    },
+    "Wayback Machine": {
+      "file": "wayback_module.py",
+      "api_required": false,
+      "status": "registered",
+      "registered_at": "2026-03-07T11:53:04.873748"
+    },
+    "Hunter.io": {
+      "file": "hunter_module.py",
+      "api_required": true,
+      "status": "registered",
+      "registered_at": "2026-03-07T11:53:04.882059"
+    }
+  },
+  "last_updated": "2026-03-07T11:53:04.806705",
+  "total_modules": 8
+}

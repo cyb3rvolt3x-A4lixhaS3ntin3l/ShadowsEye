@@ -1,245 +1,204 @@
-{% extends "base.html" %}
-{% block title %}{{ case.title }} - Sentinel Core{% endblock %}
-{% block header_title %}Case #{{ case.id }}{% endblock %}
-
-{% block content %}
-<div class="card mb-3">
-    <div class="card-header">
-        <h3 class="card-title">{{ case.title }}</h3>
-        <div style="display: flex; gap: 12px;">
-            <span class="badge badge-{{ 'success' if case.status == 'active' else 'warning' }}">{{ case.status }}</span>
-            <span class="badge badge-{{ 'danger' if case.priority == 'high' else 'info' }}">{{ case.priority }}</span>
-            <a href="{{ url_for('graph_view', case_id=case.id) }}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-project-diagram"></i> Graph View
-            </a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ case.name }} - Sentinel Core</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f23; color: #fff; min-height: 100vh; }
+        .navbar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,217,255,0.2); }
+        .navbar h1 { color: #00d9ff; font-size: 24px; }
+        .nav-links a { color: #888; text-decoration: none; margin-left: 20px; transition: color 0.3s; }
+        .nav-links a:hover { color: #00d9ff; }
+        .container { padding: 30px; }
+        .case-header { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .case-header h2 { color: #00d9ff; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .section h3 { color: #00d9ff; margin-bottom: 15px; font-size: 16px; }
+        .btn { padding: 8px 16px; border-radius: 6px; text-decoration: none; display: inline-block; cursor: pointer; border: none; font-size: 14px; }
+        .btn-primary { background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%); color: #fff; }
+        .btn-danger { background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); color: #fff; }
+        .entity-tag { display: inline-block; padding: 6px 12px; background: rgba(0,217,255,0.2); border: 1px solid rgba(0,217,255,0.3); border-radius: 20px; margin: 5px; font-size: 14px; }
+        .entity-tag.domain { background: rgba(0,217,255,0.2); }
+        .entity-tag.ip { background: rgba(0,255,100,0.2); }
+        .entity-tag.email { background: rgba(255,165,0,0.2); }
+        .entity-tag.url { background: rgba(255,0,255,0.2); }
+        .scan-item { padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 10px; }
+        .scan-item .tool-name { color: #00d9ff; font-weight: bold; }
+        .scan-item .timestamp { color: #666; font-size: 12px; }
+        .form-inline { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px; }
+        .form-inline input, .form-inline select { padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; }
+        textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; min-height: 80px; }
+        .note { padding: 15px; background: rgba(255,255,0,0.1); border-left: 3px solid #ffcc00; border-radius: 6px; margin-bottom: 10px; }
+        .ai-chat { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; margin-top: 15px; }
+        .ai-message { background: rgba(0,217,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 10px; white-space: pre-wrap; }
+        .user-message { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🛡️ Sentinel Core</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('cases_list') }}">Cases</a>
+            <a href="{{ url_for('tools_list') }}">Tools</a>
+            <a href="{{ url_for('graph_view', case_id=case.id) }}">Graph View</a>
+            <a href="{{ url_for('logout') }}" style="color: #ff4444;">Logout</a>
         </div>
     </div>
-    <p style="color: var(--text-secondary);">{{ case.description or 'No description' }}</p>
-    <div style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
-        <span>Owner: {{ case.owner_name or 'Unassigned' }}</span> | 
-        <span>Created: {{ case.created_at }}</span>
-    </div>
-</div>
-
-<div class="grid-2">
-    <!-- Entities -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-database"></i> Entities</h3>
-            <button class="btn btn-primary btn-sm" onclick="document.getElementById('addEntityModal').classList.add('active')">
-                <i class="fas fa-plus"></i> Add
-            </button>
-        </div>
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Value</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entity in entities %}
-                    <tr>
-                        <td><span class="badge badge-info entity-type-{{ entity.entity_type }}">{{ entity.entity_type }}</span></td>
-                        <td style="font-family: monospace;">{{ entity.entity_value }}</td>
-                        <td>
-                            <button class="btn btn-secondary btn-sm" onclick="showScanTools({{ entity.id }}, '{{ entity.entity_type }}', '{{ entity.entity_value }}')">
-                                <i class="fas fa-play"></i>
-                            </button>
-                            <form method="POST" action="{{ url_for('delete_entity', entity_id=entity.id) }}" style="display: inline;">
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this entity?')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No entities yet</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Notes -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-sticky-note"></i> Notes</h3>
-            <button class="btn btn-primary btn-sm" onclick="document.getElementById('addNoteModal').classList.add('active')">
-                <i class="fas fa-plus"></i> Add
-            </button>
-        </div>
-        <div style="max-height: 400px; overflow-y: auto;">
-            {% for note in notes %}
-            <div class="scan-result-card">
-                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
-                    {{ note.author_name or 'Unknown' }} • {{ note.created_at }}
-                    {% if note.ai_enhanced %}<span class="badge badge-warning" style="font-size: 10px;">AI Enhanced</span>{% endif %}
-                </div>
-                <div style="white-space: pre-wrap;">{{ note.content }}</div>
-            </div>
-            {% else %}
-            <p style="text-align: center; color: var(--text-muted); padding: 20px;">No notes yet</p>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- Scan Results -->
-<div class="card mt-3">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-radar"></i> Recent Scan Results</h3>
-    </div>
-    {% for result in scan_results %}
-    <div class="scan-result-card">
-        <div class="scan-result-header">
+    <div class="container">
+        <div class="case-header">
             <div>
-                <span class="scan-result-tool">{{ result.tool_name }}</span>
-                <span style="color: var(--text-muted); margin-left: 12px;">on {{ result.entity_type }}: {{ result.entity_value }}</span>
+                <h2>{{ case.name }}</h2>
+                <p style="color: #888; margin-top: 5px;">{{ case.description or 'No description' }}</p>
+                <span style="color: #666; font-size: 12px;">Priority: {{ case.priority }} | Status: {{ case.status }}</span>
             </div>
-            <div class="scan-result-status">
-                <span class="badge badge-success">Completed</span>
-                <span style="color: var(--text-muted); font-size: 13px;">{{ result.created_at }}</span>
+            <div>
+                <a href="{{ url_for('graph_view', case_id=case.id) }}" class="btn btn-primary">View Graph</a>
             </div>
         </div>
-        <div class="code-block" style="max-height: 300px; overflow-y: auto;">
-            <pre>{{ result.results | tojson(indent=2) }}</pre>
-        </div>
-    </div>
-    {% else %}
-    <p style="text-align: center; color: var(--text-muted); padding: 20px;">No scan results yet. Add an entity and run a scan!</p>
-    {% endfor %}
-</div>
-
-<!-- Add Entity Modal -->
-<div class="modal-overlay" id="addEntityModal">
-    <div class="modal">
-        <div class="modal-header">
-            <h3 class="modal-title">Add Entity</h3>
-            <button class="modal-close" onclick="document.getElementById('addEntityModal').classList.remove('active')">&times;</button>
-        </div>
-        <form method="POST" action="{{ url_for('add_entity') }}">
-            <input type="hidden" name="case_id" value="{{ case.id }}">
-            <div class="form-group">
-                <label class="form-label">Entity Type *</label>
-                <select name="entity_type" class="form-control" required>
+        
+        <!-- Add Entity -->
+        <div class="section">
+            <h3>➕ Add Entity</h3>
+            <form action="{{ url_for('entity_add') }}" method="POST" class="form-inline">
+                <input type="hidden" name="case_id" value="{{ case.id }}">
+                <select name="type">
                     <option value="domain">Domain</option>
                     <option value="ip">IP Address</option>
                     <option value="email">Email</option>
                     <option value="url">URL</option>
-                    <option value="hash">File Hash</option>
+                    <option value="hash">Hash</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Entity Value *</label>
-                <input type="text" name="entity_value" class="form-control" placeholder="e.g., example.com" required>
-            </div>
-            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('addEntityModal').classList.remove('active')">Cancel</button>
+                <input type="text" name="value" placeholder="Enter value (e.g., example.com)" required style="flex: 1;">
+                <input type="text" name="label" placeholder="Label (optional)">
                 <button type="submit" class="btn btn-primary">Add Entity</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Add Note Modal -->
-<div class="modal-overlay" id="addNoteModal">
-    <div class="modal">
-        <div class="modal-header">
-            <h3 class="modal-title">Add Note</h3>
-            <button class="modal-close" onclick="document.getElementById('addNoteModal').classList.remove('active')">&times;</button>
+            </form>
         </div>
-        <form method="POST" action="{{ url_for('add_note') }}">
-            <input type="hidden" name="case_id" value="{{ case.id }}">
-            <div class="form-group">
-                <label class="form-label">Content *</label>
-                <textarea name="content" class="form-control" rows="6" required></textarea>
+        
+        <!-- Entities -->
+        <div class="section">
+            <h3>📊 Entities ({{ entities|length }})</h3>
+            <div>
+                {% for entity in entities %}
+                <span class="entity-tag {{ entity.entity_type }}">{{ entity.entity_type }}: {{ entity.value }}</span>
+                {% else %}
+                <p style="color: #666;">No entities yet. Add one above.</p>
+                {% endfor %}
             </div>
-            <div class="form-group">
-                <label class="form-label">
-                    <input type="checkbox" name="ai_enhanced"> AI Enhance (requires API key)
-                </label>
-            </div>
-            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('addNoteModal').classList.remove('active')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Add Note</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Scan Tools Modal -->
-<div class="modal-overlay" id="scanToolsModal">
-    <div class="modal">
-        <div class="modal-header">
-            <h3 class="modal-title">Run Scan on <span id="scanTarget" style="color: var(--neon-blue);"></span></h3>
-            <button class="modal-close" onclick="document.getElementById('scanToolsModal').classList.remove('active')">&times;</button>
         </div>
-        <div id="scanToolsList" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;"></div>
-    </div>
-</div>
-
-<script>
-function showScanTools(entityId, entityType, entityValue) {
-    document.getElementById('scanTarget').textContent = entityValue;
-    const toolsByType = {
-        'domain': [
-            {id: 'whois_lookup', name: 'WHOIS Lookup', icon: 'fa-search'},
-            {id: 'dns_enum', name: 'DNS Enumeration', icon: 'fa-list'},
-            {id: 'subdomain_discovery', name: 'Subdomain Discovery', icon: 'fa-sitemap'},
-            {id: 'http_probe', name: 'HTTP Probe', icon: 'fa-globe'},
-            {id: 'ssl_check', name: 'SSL Check', icon: 'fa-lock'}
-        ],
-        'ip': [
-            {id: 'port_scan', name: 'Port Scan', icon: 'fa-network-wired'},
-            {id: 'geoip_lookup', name: 'GeoIP Lookup', icon: 'fa-map-marker-alt'},
-            {id: 'shodan_search', name: 'Shodan Search', icon: 'fa-search-location'}
-        ],
-        'email': [
-            {id: 'email_breach', name: 'Breach Check', icon: 'fa-envelope-open-text'}
-        ],
-        'url': [
-            {id: 'http_probe', name: 'HTTP Probe', icon: 'fa-globe'}
-        ],
-        'hash': [
-            {id: 'virustotal_scan', name: 'VirusTotal Scan', icon: 'fa-shield-virus'}
-        ]
-    };
-    
-    const tools = toolsByType[entityType] || [];
-    const container = document.getElementById('scanToolsList');
-    container.innerHTML = tools.map(tool => `
-        <button class="tool-card" onclick="executeScan(${entityId}, '${tool.id}')" style="padding: 16px; text-align: left;">
-            <div class="tool-card-header">
-                <div class="tool-card-icon"><i class="fas ${tool.icon}"></i></div>
-                <span class="tool-card-title">${tool.name}</span>
+        
+        <!-- Quick Scans -->
+        <div class="section">
+            <h3>🔍 Quick Scans</h3>
+            <div class="form-inline">
+                <input type="text" id="scanTarget" placeholder="Enter target" style="flex: 1;">
+                <button onclick="runScan('dns')" class="btn btn-primary">DNS</button>
+                <button onclick="runScan('whois')" class="btn btn-primary">WHOIS</button>
+                <button onclick="runScan('ssl')" class="btn btn-primary">SSL</button>
+                <button onclick="runScan('crtsh')" class="btn btn-primary">CT Logs</button>
             </div>
-        </button>
-    `).join('');
+            <div id="scanResults"></div>
+        </div>
+        
+        <!-- AI Chat -->
+        <div class="section">
+            <h3>🤖 AI Assistant (Kimi K2.5)</h3>
+            <div id="chatContainer" class="ai-chat" style="max-height: 300px; overflow-y: auto;">
+                <div class="ai-message">Hello! I'm your Kimi AI assistant. Ask me anything about this investigation.</div>
+            </div>
+            <div class="form-inline" style="margin-top: 15px;">
+                <input type="text" id="aiPrompt" placeholder="Ask AI..." style="flex: 1;">
+                <select id="aiRole">
+                    <option value="ethical_hacker">Ethical Hacker</option>
+                    <option value="incident_responder">Incident Responder</option>
+                    <option value="osint_specialist">OSINT Specialist</option>
+                    <option value="threat_hunter">Threat Hunter</option>
+                </select>
+                <button onclick="sendAiMessage()" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+        
+        <!-- Scan Results -->
+        <div class="section">
+            <h3>📋 Scan Results ({{ scans|length }})</h3>
+            {% for scan in scans %}
+            <div class="scan-item">
+                <div class="tool-name">{{ scan.tool_name }}</div>
+                <div class="timestamp">{{ scan.executed_at.strftime('%Y-%m-%d %H:%M') if scan.executed_at else 'N/A' }} | Target: {{ scan.input_data }}</div>
+                <pre style="color: #888; font-size: 12px; margin-top: 10px; max-height: 200px; overflow: auto;">{{ scan.result_data|tojson(indent=2)[:500] }}...</pre>
+            </div>
+            {% else %}
+            <p style="color: #666;">No scans yet. Run a quick scan above.</p>
+            {% endfor %}
+        </div>
+        
+        <!-- Notes -->
+        <div class="section">
+            <h3>📝 Notes</h3>
+            <form action="{{ url_for('note_add') }}" method="POST" style="margin-bottom: 15px;">
+                <input type="hidden" name="case_id" value="{{ case.id }}">
+                <textarea name="content" placeholder="Add a note..."></textarea>
+                <input type="text" name="tags" placeholder="Tags (comma separated)" style="margin-top: 10px; width: 100%;">
+                <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Add Note</button>
+            </form>
+            {% for note in notes %}
+            <div class="note">
+                <p>{{ note.content }}</p>
+                <small style="color: #666;">{% if note.tags %}Tags: {{ note.tags|join(', ') }} | {% endif %}By {{ note.author.username }} | {{ note.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     
-    document.getElementById('scanToolsModal').classList.add('active');
-}
-
-function executeScan(entityId, toolName) {
-    const btn = event.currentTarget;
-    btn.innerHTML = '<i class="fas fa-spinner spin"></i> Running...';
-    
-    fetch('/scan/execute', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `entity_id=${entityId}&tool_name=${toolName}`
-    })
-    .then(r => r.json())
-    .then(data => {
-        alert(data.success ? 'Scan completed!' : 'Error: ' + (data.error || 'Unknown error'));
-        location.reload();
-    })
-    .catch(e => {
-        alert('Error: ' + e.message);
-        btn.disabled = false;
-    });
-}
-</script>
-{% endblock %}
+    <script>
+        function runScan(tool) {
+            const target = document.getElementById('scanTarget').value;
+            if (!target) { alert('Please enter a target'); return; }
+            
+            fetch('/scan/' + tool, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({target: target, case_id: {{ case.id }}})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('scanResults').innerHTML = '<div style="color: #44ff44;">Scan completed! Refresh to see results.</div>';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(e => alert('Error: ' + e));
+        }
+        
+        function sendAiMessage() {
+            const prompt = document.getElementById('aiPrompt').value;
+            const role = document.getElementById('aiRole').value;
+            if (!prompt) return;
+            
+            const container = document.getElementById('chatContainer');
+            container.innerHTML += '<div class="user-message">' + prompt + '</div>';
+            
+            fetch('/ai/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({prompt: prompt, role: role, case_id: {{ case.id }})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.response) {
+                    container.innerHTML += '<div class="ai-message">' + data.response + '</div>';
+                } else {
+                    container.innerHTML += '<div class="ai-message" style="color: #ff4444;">Error: ' + (data.error || 'Unknown error') + '</div>';
+                }
+                container.scrollTop = container.scrollHeight;
+            });
+            
+            document.getElementById('aiPrompt').value = '';
+        }
+    </script>
+</body>
+</html>
