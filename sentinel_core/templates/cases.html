@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cases - Sentinel Core</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #1e293b; padding: 1.5rem; border-right: 1px solid #334155; position: fixed; height: 100vh; overflow-y: auto; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #334155; }
+        .logo i { font-size: 1.5rem; color: #3b82f6; }
+        .logo span { font-weight: 700; font-size: 1.2rem; background: linear-gradient(to right, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 8px; margin-bottom: 0.5rem; transition: all 0.2s; }
+        .nav-item:hover, .nav-item.active { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .nav-item i { width: 20px; text-align: center; }
+        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 1.8rem; font-weight: 700; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4); }
+        .cases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .case-card { background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; transition: all 0.2s; cursor: pointer; }
+        .case-card:hover { transform: translateY(-4px); border-color: #3b82f6; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+        .case-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
+        .case-card p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem; }
+        .case-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b; }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .status-active { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-shield-halved"></i><span>Sentinel Core</span></div>
+        <a href="/" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/cases" class="nav-item active"><i class="fas fa-folder-open"></i> Cases</a>
+        <a href="/notes" class="nav-item"><i class="fas fa-sticky-note"></i> Notes</a>
+        <a href="/reports" class="nav-item"><i class="fas fa-file-alt"></i> Reports</a>
+        <a href="/terminal" class="nav-item"><i class="fas fa-terminal"></i> Terminal</a>
+        <a href="/settings" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #334155;">
+            <a href="/logout" class="nav-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1><i class="fas fa-folder-open"></i> Cases</h1>
+            <button onclick="document.getElementById('newCaseModal').style.display='flex'" class="btn btn-primary"><i class="fas fa-plus"></i> New Case</button>
+        </div>
+        <div class="cases-grid">
+            {% for case in cases %}
+            <div class="case-card" onclick="window.location.href='/case/{{ case[0] }}'">
+                <h3>{{ case[1] }}</h3>
+                <p>{{ case[2][:100] }}{% if case[2]|length > 100 %}...{% endif %}</p>
+                <div class="case-meta">
+                    <span>{{ case[3][:10] }}</span>
+                    <span class="status-badge status-active">{{ case[4] }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div id="newCaseModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#1e293b;padding:2rem;border-radius:12px;width:100%;max-width:500px;border:1px solid #334155;">
+            <h2 style="margin-bottom:1.5rem;">Create New Case</h2>
+            <input type="text" id="caseName" placeholder="Case Name" style="width:100%;padding:0.875rem;margin-bottom:1rem;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#fff;">
+            <textarea id="caseDesc" placeholder="Description" rows="4" style="width:100%;padding:0.875rem;margin-bottom:1.5rem;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#fff;"></textarea>
+            <div style="display:flex;gap:1rem;justify-content:flex-end;">
+                <button onclick="document.getElementById('newCaseModal').style.display='none'" class="btn btn-secondary" style="background:#334155;color:#e2e8f0;">Cancel</button>
+                <button onclick="createCase()" class="btn btn-primary">Create Case</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function createCase() {
+            const name = document.getElementById('caseName').value;
+            const desc = document.getElementById('caseDesc').value;
+            const res = await fetch('/api/create_case', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, description: desc}) });
+            if (res.ok) window.location.href = '/cases';
+            else alert('Failed to create case');
+        }
+    </script>
+</body>
+</html>

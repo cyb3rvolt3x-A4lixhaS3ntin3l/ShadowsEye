@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal - Sentinel Core</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #1e293b; padding: 1.5rem; border-right: 1px solid #334155; position: fixed; height: 100vh; overflow-y: auto; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #334155; }
+        .logo i { font-size: 1.5rem; color: #3b82f6; }
+        .logo span { font-weight: 700; font-size: 1.2rem; background: linear-gradient(to right, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 8px; margin-bottom: 0.5rem; transition: all 0.2s; }
+        .nav-item:hover, .nav-item.active { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .nav-item i { width: 20px; text-align: center; }
+        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
+        .header { margin-bottom: 2rem; }
+        .header h1 { font-size: 1.8rem; font-weight: 700; }
+        .terminal-container { background: #1e1e1e; border-radius: 12px; overflow: hidden; border: 1px solid #334155; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .terminal-header { background: #2d2d2d; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid #334155; }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+        .terminal-title { margin-left: 1rem; color: #94a3b8; font-size: 0.9rem; }
+        .terminal-body { padding: 1rem; font-family: 'Fira Code', monospace; font-size: 0.9rem; height: 500px; overflow-y: auto; }
+        .terminal-line { margin-bottom: 0.5rem; }
+        .prompt { color: #22c55e; }
+        .command { color: #e2e8f0; }
+        .output { color: #94a3b8; margin-left: 2rem; white-space: pre-wrap; }
+        .input-line { display: flex; align-items: center; margin-top: 1rem; }
+        .input-prompt { color: #22c55e; margin-right: 0.5rem; }
+        .terminal-input { flex: 1; background: transparent; border: none; color: #e2e8f0; font-family: 'Fira Code', monospace; font-size: 0.9rem; outline: none; }
+        .quick-commands { margin-top: 2rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .cmd-btn { padding: 0.5rem 1rem; background: #334155; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; border: none; color: #e2e8f0; }
+        .cmd-btn:hover { background: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-shield-halved"></i><span>Sentinel Core</span></div>
+        <a href="/" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/cases" class="nav-item"><i class="fas fa-folder-open"></i> Cases</a>
+        <a href="/notes" class="nav-item"><i class="fas fa-sticky-note"></i> Notes</a>
+        <a href="/reports" class="nav-item"><i class="fas fa-file-alt"></i> Reports</a>
+        <a href="/terminal" class="nav-item active"><i class="fas fa-terminal"></i> Terminal</a>
+        <a href="/settings" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #334155;">
+            <a href="/logout" class="nav-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1><i class="fas fa-terminal"></i> Local Terminal</h1>
+            <p style="color:#94a3b8;margin-top:0.5rem;">Execute security tools and commands directly from the platform.</p>
+        </div>
+
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <div class="terminal-dot dot-red"></div>
+                <div class="terminal-dot dot-yellow"></div>
+                <div class="terminal-dot dot-green"></div>
+                <span class="terminal-title">sentinel-core@local:~</span>
+            </div>
+            <div class="terminal-body" id="terminalBody">
+                <div class="terminal-line">
+                    <span class="prompt">sentinel@core:~$</span>
+                    <span class="command">Welcome to Sentinel Core Terminal</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">Type commands or use quick commands below. All actions are logged.</span>
+                </div>
+            </div>
+            <div class="input-line" style="padding:1rem;">
+                <span class="input-prompt">sentinel@core:~$</span>
+                <input type="text" class="terminal-input" id="cmdInput" placeholder="Enter command..." autofocus>
+            </div>
+        </div>
+
+        <div class="quick-commands">
+            <button class="cmd-btn" onclick="runCommand('nmap -sV target.com')">nmap -sV</button>
+            <button class="cmd-btn" onclick="runCommand('subfinder -d target.com')">subfinder -d</button>
+            <button class="cmd-btn" onclick="runCommand('httpx -l subdomains.txt')">httpx -l</button>
+            <button class="cmd-btn" onclick="runCommand('nuclei -t vulnerabilities/ -u target.com')">nuclei</button>
+            <button class="cmd-btn" onclick="runCommand('whois target.com')">whois</button>
+            <button class="cmd-btn" onclick="runCommand('dig target.com ANY')">dig ANY</button>
+        </div>
+    </div>
+
+    <script>
+        const terminalBody = document.getElementById('terminalBody');
+        const cmdInput = document.getElementById('cmdInput');
+
+        cmdInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                runCommand(this.value);
+                this.value = '';
+            }
+        });
+
+        function runCommand(cmd) {
+            // Add command line
+            const cmdLine = document.createElement('div');
+            cmdLine.className = 'terminal-line';
+            cmdLine.innerHTML = `<span class="prompt">sentinel@core:~$</span> <span class="command">${cmd}</span>`;
+            terminalBody.appendChild(cmdLine);
+
+            // Simulate output (in real implementation, this would call backend)
+            setTimeout(() => {
+                const outputLine = document.createElement('div');
+                outputLine.className = 'terminal-line';
+                
+                let output = '';
+                if (cmd.startsWith('nmap')) {
+                    output = `Starting Nmap...\nDiscovered ports: 80/tcp (HTTP), 443/tcp (HTTPS)\nService detection completed.`;
+                } else if (cmd.startsWith('subfinder')) {
+                    output = `Running subdomain enumeration...\nFound: www.target.com, mail.target.com, api.target.com`;
+                } else if (cmd.startsWith('whois')) {
+                    output = `Domain registered to Example Corp\nRegistrar: GoDaddy\nCreated: 2020-01-01`;
+                } else {
+                    output = `Executing: ${cmd}\n[Simulated output for security]\nCommand completed successfully.`;
+                }
+                
+                outputLine.innerHTML = `<span class="output">${output}</span>`;
+                terminalBody.appendChild(outputLine);
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+            }, 500);
+        }
+
+        // Focus input on click
+        document.querySelector('.terminal-container').addEventListener('click', () => {
+            cmdInput.focus();
+        });
+    </script>
+</body>
+</html>
