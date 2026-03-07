@@ -11,6 +11,11 @@ Features:
 - Entity relationship graph with confidence scoring
 - Evidence chain of custody
 - STIX 2.1 export capability
+- Kimi Moonshot AI integration for intelligent analysis
+- Advanced correlation engine for threat intelligence
+- MITRE ATT&CK framework mapping
+- Automated playbook execution (Kevin Mitnick, Bug Hunters methodologies)
+- ML-based anomaly detection
 """
 
 import os
@@ -41,6 +46,13 @@ from models.intelligence import IntelligenceGraph, create_entity, create_relatio
 from integrations.kali_tools import kali_tools
 from integrations.advanced_tools import registry as tool_registry
 from reports.report_generator import generator as report_generator
+
+# Import advanced features
+from ai.kimi_integration import kimi_assistant, get_kimi_assistant
+from correlation.engine import correlation_engine, get_correlation_engine
+from integrations.attack_framework import attck_mapper, get_attck_mapper
+from playbooks.engine import playbook_engine, get_playbook_engine
+from ml_anomaly.detector import anomaly_detector, get_anomaly_detector
 
 
 def load_registry_secrets_from_env():
@@ -111,6 +123,19 @@ def init_db():
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         ip_address TEXT,
         FOREIGN KEY (user_id) REFERENCES users (id)
+    )''')
+    
+    # Notes table for user notes with AI integration
+    c.execute('''CREATE TABLE IF NOT EXISTS notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        title TEXT NOT NULL,
+        content TEXT,
+        tags TEXT,
+        case_id INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id),
+        FOREIGN KEY (case_id) REFERENCES cases (id)
     )''')
     
     # Create default admin user if not exists
@@ -860,6 +885,321 @@ def audit_log():
     conn.close()
     return render_template('audit.html', logs=logs)
 
+# ==================== ADVANCED FEATURES API ENDPOINTS ====================
+
+@app.route('/api/kimi/query', methods=['POST'])
+@login_required
+def kimi_query():
+    """Query Kimi AI assistant with context"""
+    role = request.form.get('role', 'hacker')
+    query = request.form.get('query', '')
+    context_json = request.form.get('context', '{}')
+    
+    if not query:
+        return jsonify({'error': 'Query required'}), 400
+    
+    try:
+        context = json.loads(context_json) if context_json else {}
+    except:
+        context = {}
+    
+    result = kimi_assistant.query(role, query, context)
+    return jsonify(result)
+
+@app.route('/api/kimi/analyze-finding', methods=['POST'])
+@login_required
+def kimi_analyze_finding():
+    """Analyze a security finding with Kimi AI"""
+    finding_json = request.form.get('finding', '{}')
+    role = request.form.get('role', 'hacker')
+    
+    try:
+        finding = json.loads(finding_json)
+    except:
+        return jsonify({'error': 'Invalid finding JSON'}), 400
+    
+    result = kimi_assistant.analyze_finding(finding, role)
+    return jsonify(result)
+
+@app.route('/api/kimi/suggest-next-steps', methods=['POST'])
+@login_required
+def kimi_suggest_next_steps():
+    """Get AI-suggested next investigation steps"""
+    findings_json = request.form.get('findings', '[]')
+    target = request.form.get('target', '')
+    
+    try:
+        findings = json.loads(findings_json)
+    except:
+        return jsonify({'error': 'Invalid findings JSON'}), 400
+    
+    result = kimi_assistant.suggest_next_steps(findings, target)
+    return jsonify(result)
+
+@app.route('/api/correlation/add-finding', methods=['POST'])
+@login_required
+def correlation_add_finding():
+    """Add a finding to the correlation engine"""
+    finding_json = request.form.get('finding', '{}')
+    
+    try:
+        finding = json.loads(finding_json)
+    except:
+        return jsonify({'error': 'Invalid finding JSON'}), 400
+    
+    correlation_engine.add_finding(finding)
+    return jsonify({'success': True, 'message': 'Finding added for correlation analysis'})
+
+@app.route('/api/correlation/results')
+@login_required
+def correlation_results():
+    """Get correlation results"""
+    min_confidence = float(request.args.get('min_confidence', 0))
+    results = correlation_engine.get_correlations(min_confidence=min_confidence)
+    summary = correlation_engine.get_correlation_summary()
+    
+    return jsonify({
+        'summary': summary,
+        'correlations': results
+    })
+
+@app.route('/api/attack/map-finding', methods=['POST'])
+@login_required
+def attack_map_finding():
+    """Map a finding to MITRE ATT&CK techniques"""
+    finding_type = request.form.get('type', '')
+    finding_json = request.form.get('finding', '{}')
+    
+    try:
+        finding = json.loads(finding_json)
+    except:
+        return jsonify({'error': 'Invalid finding JSON'}), 400
+    
+    techniques = attck_mapper.map_finding(finding_type, finding)
+    return jsonify({
+        'techniques': [t.to_dict() for t in techniques]
+    })
+
+@app.route('/api/attack/matrix')
+@login_required
+def attack_matrix():
+    """Get MITRE ATT&CK matrix"""
+    return jsonify(attck_mapper.get_attack_matrix())
+
+@app.route('/api/attack/navigator-layer')
+@login_required
+def attack_navigator_layer():
+    """Generate MITRE ATT&CK Navigator layer"""
+    return jsonify(attck_mapper.generate_attack_navigator_layer())
+
+@app.route('/api/playbooks/list')
+@login_required
+def list_playbooks():
+    """List available playbooks"""
+    target_type = request.args.get('target_type')
+    tag = request.args.get('tag')
+    playbooks = playbook_engine.list_playbooks(target_type, tag)
+    return jsonify(playbooks)
+
+@app.route('/api/playbooks/execute', methods=['POST'])
+@login_required
+def execute_playbook():
+    """Execute a playbook against a target"""
+    playbook_id = request.form.get('playbook_id')
+    target = request.form.get('target')
+    case_id = request.form.get('case_id')
+    
+    if not all([playbook_id, target, case_id]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+    
+    # Simple executor callback that queues modules
+    def executor_callback(module_id, target, params, timeout):
+        task_id = task_queue.submit_task(
+            module_id=module_id,
+            target=target,
+            case_id=int(case_id),
+            user_id=session['user_id'],
+            parameters=params,
+            timeout=timeout
+        )
+        return {'task_id': task_id, 'status': 'queued'}
+    
+    result = playbook_engine.execute_playbook(
+        playbook_id=playbook_id,
+        target=target,
+        case_id=int(case_id),
+        user_id=session['user_id'],
+        executor_callback=executor_callback
+    )
+    
+    return jsonify(result)
+
+@app.route('/api/anomaly/detect', methods=['POST'])
+@login_required
+def anomaly_detect():
+    """Add finding for anomaly detection"""
+    finding_json = request.form.get('finding', '{}')
+    
+    try:
+        finding = json.loads(finding_json)
+    except:
+        return jsonify({'error': 'Invalid finding JSON'}), 400
+    
+    anomaly_detector.add_finding(finding)
+    return jsonify({'success': True, 'message': 'Finding analyzed for anomalies'})
+
+@app.route('/api/anomaly/results')
+@login_required
+def anomaly_results():
+    """Get detected anomalies"""
+    severity = request.args.get('severity')
+    min_confidence = float(request.args.get('min_confidence', 0))
+    
+    anomalies = anomaly_detector.get_anomalies(severity, min_confidence)
+    summary = anomaly_detector.get_anomaly_summary()
+    risk_score = anomaly_detector.calculate_risk_score()
+    
+    return jsonify({
+        'summary': summary,
+        'risk_score': risk_score,
+        'anomalies': anomalies
+    })
+
+@app.route('/api/settings/kimi', methods=['POST'])
+@login_required
+def set_kimi_config():
+    """Configure Kimi AI API settings"""
+    api_key = request.form.get('api_key', '')
+    base_url = request.form.get('base_url', 'https://api.moonshot.cn/v1')
+    model = request.form.get('model', 'moonshot-v1-8k')
+    
+    # Update environment variable (for current session)
+    os.environ['KIMI_API_KEY'] = api_key
+    os.environ['KIMI_BASE_URL'] = base_url
+    os.environ['KIMI_MODEL'] = model
+    
+    # Reinitialize assistant with new config
+    from ai.kimi_integration import KimiConfig
+    kimi_assistant.config = KimiConfig(
+        api_key=api_key,
+        base_url=base_url,
+        model=model
+    )
+    
+    log_audit(session['user_id'], 'SET_KIMI_CONFIG', 'Updated Kimi AI configuration', request.remote_addr)
+    
+    return jsonify({
+        'success': True,
+        'configured': kimi_assistant.is_configured(),
+        'model': model
+    })
+
+@app.route('/api/settings/kimi', methods=['GET'])
+@login_required
+def get_kimi_config():
+    """Get current Kimi AI configuration status"""
+    return jsonify({
+        'configured': kimi_assistant.is_configured(),
+        'model': kimi_assistant.config.model,
+        'base_url': kimi_assistant.config.base_url
+    })
+
+@app.route('/notes')
+@login_required
+def notes_page():
+    """Notes management page with AI integration"""
+    return render_template('notes.html')
+
+@app.route('/api/notes', methods=['GET'])
+@login_required
+def get_notes():
+    """Get all notes for user"""
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT * FROM notes WHERE user_id = ? ORDER BY created_at DESC", (session['user_id'],))
+    notes = c.fetchall()
+    conn.close()
+    
+    return jsonify([{
+        'id': n[0],
+        'title': n[2],
+        'content': n[3],
+        'tags': n[4],
+        'case_id': n[5],
+        'created_at': n[6]
+    } for n in notes])
+
+@app.route('/api/notes', methods=['POST'])
+@login_required
+def create_note():
+    """Create a new note"""
+    title = request.form.get('title', 'Untitled Note')
+    content = request.form.get('content', '')
+    tags = request.form.get('tags', '')
+    case_id = request.form.get('case_id')
+    
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO notes (user_id, title, content, tags, case_id)
+        VALUES (?, ?, ?, ?, ?)
+    """, (session['user_id'], title, content, tags, case_id))
+    note_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'note_id': note_id})
+
+@app.route('/api/notes/<int:note_id>', methods=['PUT'])
+@login_required
+def update_note(note_id):
+    """Update an existing note"""
+    title = request.form.get('title')
+    content = request.form.get('content')
+    tags = request.form.get('tags')
+    
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("""
+        UPDATE notes SET title=?, content=?, tags=?
+        WHERE id=? AND user_id=?
+    """, (title, content, tags, note_id, session['user_id']))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True})
+
+@app.route('/api/notes/<int:note_id>', methods=['DELETE'])
+@login_required
+def delete_note(note_id):
+    """Delete a note"""
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("DELETE FROM notes WHERE id=? AND user_id=?", (note_id, session['user_id']))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True})
+
+@app.route('/api/notes/<int:note_id>/ai-analyze', methods=['POST'])
+@login_required
+def ai_analyze_note(note_id):
+    """Analyze note content with Kimi AI"""
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT content FROM notes WHERE id=? AND user_id=?", (note_id, session['user_id']))
+    row = c.fetchone()
+    conn.close()
+    
+    if not row:
+        return jsonify({'error': 'Note not found'}), 404
+    
+    content = row[0]
+    role = request.form.get('role', 'hacker')
+    
+    result = kimi_assistant.query(role, f"Analyze these security notes and provide insights:\n\n{content}")
+    return jsonify(result)
+
 if __name__ == '__main__':
     # Initialize database
     init_db()
@@ -920,6 +1260,17 @@ if __name__ == '__main__':
     
     task_queue.on_result(on_task_complete)
     
+    # Register playbook executor
+    def playbook_executor(playbook_id, target, case_id):
+        """Execute a playbook"""
+        return playbook_engine.execute_playbook(
+            playbook_id=playbook_id,
+            target=target,
+            case_id=case_id,
+            user_id=1,  # Default for now
+            executor_callback=lambda m, t, p, to: {'task_id': task_queue.submit_task(m, t, case_id, 1, p, timeout=to)}
+        )
+    
     print("=" * 70)
     print("🛡️  SENTINEL CORE - ELITE OSINT PLATFORM INITIALIZED")
     print("=" * 70)
@@ -933,12 +1284,22 @@ if __name__ == '__main__':
     print(f"[*] Registered tools: {len(tool_registry.tools)}")
     print(f"[*] Script templates: {len(script_engine.builtin_templates)}")
     print("-" * 70)
+    print("🆕 ADVANCED FEATURES:")
+    print("   [+] Kimi Moonshot AI Integration - Intelligent analysis assistant")
+    print("   [+] Correlation Engine - Threat intelligence correlation")
+    print("   [+] MITRE ATT&CK Mapping - TTP identification")
+    print("   [+] Playbook Engine - Automated elite methodologies")
+    print("   [+] ML Anomaly Detection - Statistical threat detection")
+    print("   [+] Notes System - Integrated note-taking with AI")
+    print("-" * 70)
     print("📖 QUICK START:")
     print("   1. Access web UI: http://localhost:5001")
     print("   2. Login: admin / admin123")
     print("   3. Create a case and run recon chains")
     print("   4. Execute custom scripts via API")
     print("   5. Generate Maltego-style reports")
+    print("   6. Configure Kimi AI in Settings for intelligent assistance")
+    print("   7. Use automated playbooks for elite pentesting")
     print("-" * 70)
     print("⚡ API ENDPOINTS:")
     print("   POST /api/script/execute    - Run custom Python scripts")
@@ -948,6 +1309,13 @@ if __name__ == '__main__':
     print("   POST /api/recon/full-chain  - Full recon automation")
     print("   GET  /api/report/generate   - Generate reports")
     print("   GET  /api/graph/visualize   - Graph visualization data")
+    print("   POST /api/kimi/query        - Query AI assistant")
+    print("   GET  /api/playbooks/list    - List available playbooks")
+    print("   POST /api/playbooks/execute - Execute automated playbook")
+    print("   GET  /api/correlation/results - Get correlation analysis")
+    print("   GET  /api/anomaly/results   - Get anomaly detection results")
+    print("   GET  /api/attack/matrix     - MITRE ATT&CK matrix")
+    print("   GET  /api/notes             - Manage notes")
     print("=" * 70)
     
     try:
