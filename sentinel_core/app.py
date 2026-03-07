@@ -42,6 +42,18 @@ from integrations.kali_tools import kali_tools
 from integrations.advanced_tools import registry as tool_registry
 from reports.report_generator import generator as report_generator
 
+
+def load_registry_secrets_from_env():
+    """Load configured module secrets from environment into the registry."""
+    required_keys = set()
+    for module in registry.modules.values():
+        required_keys.update(module['metadata'].required_secrets)
+
+    for key in required_keys:
+        value = os.environ.get(key)
+        if value:
+            registry.set_secret(key, value)
+
 # Database Initialization
 def init_db():
     conn = sqlite3.connect(DATABASE)
@@ -287,6 +299,9 @@ def list_modules():
     # Register builtin modules on first call
     if not registry.modules:
         register_builtin_modules()
+
+    # Sync API secrets from environment for accurate module status
+    load_registry_secrets_from_env()
     
     modules = registry.list_modules()
     
@@ -325,6 +340,9 @@ def run_module():
     module_info = registry.get_module(module_id)
     if not module_info:
         return jsonify({'error': f'Module {module_id} not found'}), 404
+
+    # Ensure environment-configured secrets are loaded before validation
+    load_registry_secrets_from_env()
     
     # Check required secrets
     if not registry.has_required_secrets(module_id):
@@ -361,6 +379,17 @@ def get_task_status(task_id):
     task = task_queue.get_task_status(task_id)
     if not task:
         return jsonify({'error': 'Task not found'}), 404
+
+    # Enforce case ownership for task visibility
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT id FROM cases WHERE id = ? AND user_id = ?", (task['case_id'], session['user_id']))
+    owns_case = c.fetchone()
+    conn.close()
+
+    if not owns_case:
+        return jsonify({'error': 'Access denied'}), 403
+
     return jsonify(task)
 
 @app.route('/api/tasks')
@@ -683,9 +712,21 @@ def generate_report(case_id):
 def download_report(filename):
     """Download a generated report from evidence directory"""
     from flask import send_file
+    from werkzeug.utils import secure_filename
+
     # Use absolute path to evidence directory (forensic-grade storage)
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    filepath = os.path.join(base_dir, 'evidence', filename)
+    safe_filename = secure_filename(filename)
+    if not safe_filename or safe_filename != filename:
+        return jsonify({'error': 'Invalid filename'}), 400
+
+    filepath = os.path.join(base_dir, 'evidence', safe_filename)
+
+    # Defensive path check to prevent traversal
+    evidence_dir = os.path.abspath(os.path.join(base_dir, 'evidence'))
+    if not os.path.abspath(filepath).startswith(evidence_dir + os.sep):
+        return jsonify({'error': 'Invalid file path'}), 400
+
     if os.path.exists(filepath):
         return send_file(filepath, as_attachment=True)
     return jsonify({'error': 'File not found'}), 404
@@ -696,6 +737,12 @@ def visualize_graph(case_id):
     """Get graph data for visualization"""
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
+
+    # Verify ownership
+    c.execute("SELECT id FROM cases WHERE id = ? AND user_id = ?", (case_id, session['user_id']))
+    if not c.fetchone():
+        conn.close()
+        return jsonify({'error': 'Access denied'}), 403
     
     c.execute("SELECT * FROM entities WHERE case_id = ?", (case_id,))
     entities_rows = c.fetchall()
@@ -819,6 +866,7 @@ if __name__ == '__main__':
     
     # Register builtin modules
     register_builtin_modules()
+    load_registry_secrets_from_env()
     
     # Register module executors with task queue
     for module_id, module_data in registry.modules.items():
@@ -826,15 +874,15 @@ if __name__ == '__main__':
             task_queue.register_executor(module_id, module_data['executor'])
     
     # Register advanced tool executors
-    def full_recon_executor(task):
+    def full_recon_executor(target):
         """Execute full reconnaissance chain"""
-        return tool_registry.run_recon_chain(task.target)
+        return tool_registry.run_recon_chain(target)
     
     task_queue.register_executor('full_recon_chain', full_recon_executor)
     
-    def kali_comprehensive_executor(task):
+    def kali_comprehensive_executor(target):
         """Execute comprehensive Kali tools scan"""
-        return kali_tools.run_comprehensive_recon(task.target)
+        return kali_tools.run_comprehensive_recon(target)
     
     task_queue.register_executor('kali_comprehensive', kali_comprehensive_executor)
     
