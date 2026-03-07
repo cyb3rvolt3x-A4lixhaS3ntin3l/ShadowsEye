@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel Core - Notes & AI Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #1a1a2e;
+            --secondary-bg: #16213e;
+            --accent: #0f3460;
+            --text-light: #e8e8e8;
+            --ai-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        body {
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+            min-height: 100vh;
+            color: var(--text-light);
+        }
+        .navbar {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .notes-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .note-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .note-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        .ai-panel {
+            background: var(--ai-gradient);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .role-selector .btn {
+            margin: 5px;
+        }
+        .ai-response {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .btn-ai {
+            background: var(--ai-gradient);
+            border: none;
+            color: white;
+        }
+        .btn-ai:hover {
+            opacity: 0.9;
+            color: white;
+        }
+        .settings-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="nav-item nav-link text-light">
+                    <i class="fas fa-sticky-note me-2"></i>Notes & AI Assistant
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Kimi AI Settings -->
+        <div class="settings-panel">
+            <h4><i class="fas fa-cog me-2"></i>Kimi AI Configuration</h4>
+            <p class="text-muted small">Configure Moonshot AI (Kimi) API for intelligent analysis</p>
+            <form id="kimiSettingsForm" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">API Key</label>
+                    <input type="password" class="form-control" id="kimiApiKey" placeholder="Your Kimi API Key">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Base URL</label>
+                    <input type="text" class="form-control" id="kimiBaseUrl" value="https://api.moonshot.cn/v1">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Model</label>
+                    <select class="form-select" id="kimiModel">
+                        <option value="moonshot-v1-8k">moonshot-v1-8k</option>
+                        <option value="moonshot-v1-32k">moonshot-v1-32k</option>
+                        <option value="moonshot-v1-128k">moonshot-v1-128k</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-ai w-100">
+                        <i class="fas fa-save me-1"></i>Save
+                    </button>
+                </div>
+            </form>
+            <div id="kimiStatus" class="mt-3"></div>
+        </div>
+
+        <div class="row">
+            <!-- Left: Notes List -->
+            <div class="col-md-4">
+                <div class="notes-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4><i class="fas fa-sticky-note me-2"></i>My Notes</h4>
+                        <button class="btn btn-sm btn-ai" onclick="showNewNoteModal()">
+                            <i class="fas fa-plus me-1"></i>New
+                        </button>
+                    </div>
+                    <div id="notesList">
+                        <!-- Notes loaded via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: AI Assistant -->
+            <div class="col-md-8">
+                <div class="ai-panel">
+                    <h4><i class="fas fa-robot me-2"></i>Kimi AI Assistant</h4>
+                    <p class="small mb-3">Get expert analysis from AI-powered security specialists</p>
+                    
+                    <div class="role-selector mb-3">
+                        <label class="small text-white-50">Select AI Role:</label><br>
+                        <button class="btn btn-outline-light btn-sm active" data-role="hacker" onclick="selectRole(this)">
+                            <i class="fas fa-user-secret me-1"></i>Ethical Hacker
+                        </button>
+                        <button class="btn btn-outline-light btn-sm" data-role="incident_responder" onclick="selectRole(this)">
+                            <i class="fas fa-fire-extinguisher me-1"></i>Incident Responder
+                        </button>
+                        <button class="btn btn-outline-light btn-sm" data-role="osint_specialist" onclick="selectRole(this)">
+                            <i class="fas fa-globe me-1"></i>OSINT Specialist
+                        </button>
+                        <button class="btn btn-outline-light btn-sm" data-role="report_engineer" onclick="selectRole(this)">
+                            <i class="fas fa-file-alt me-1"></i>Report Engineer
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Your Question or Analysis Request</label>
+                        <textarea class="form-control" id="aiQuery" rows="4" placeholder="Describe what you found or ask for guidance..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Context (Optional - JSON)</label>
+                        <textarea class="form-control" id="aiContext" rows="3" placeholder='{"finding": "example", "severity": "high"}'></textarea>
+                    </div>
+
+                    <button class="btn btn-ai" onclick="sendQuery()">
+                        <i class="fas fa-paper-plane me-2"></i>Analyze with Kimi AI
+                    </button>
+
+                    <div id="aiResponse" class="ai-response d-none">
+                        <h6><i class="fas fa-comment-dots me-2"></i>AI Response:</h6>
+                        <div id="aiResponseContent"></div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="notes-container">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Analysis Actions</h5>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-light w-100 text-start" onclick="quickAction('explain_vuln')">
+                                <i class="fas fa-book me-2"></i>Explain a Vulnerability
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-light w-100 text-start" onclick="quickAction('next_steps')">
+                                <i class="fas fa-forward me-2"></i>Suggest Next Steps
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-light w-100 text-start" onclick="quickAction('analyze_finding')">
+                                <i class="fas fa-search me-2"></i>Analyze Finding
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-light w-100 text-start" onclick="quickAction('craft_report')">
+                                <i class="fas fa-file-contract me-2"></i>Craft Report Section
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New/Edit Note Modal -->
+    <div class="modal fade" id="noteModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: var(--secondary-bg); color: var(--text-light);">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="noteModalTitle">New Note</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="noteId">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" id="noteTitle">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-control" id="noteContent" rows="8"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-control" id="noteTags" placeholder="recon, findings, important">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="deleteNoteBtn" style="display:none;" onclick="deleteCurrentNote()">
+                        <i class="fas fa-trash me-1"></i>Delete
+                    </button>
+                    <button type="button" class="btn btn-ai" onclick="saveNote()">
+                        <i class="fas fa-save me-1"></i>Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentRole = 'hacker';
+        let noteModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotes();
+            loadKimiConfig();
+            noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+        });
+
+        function selectRole(btn) {
+            document.querySelectorAll('.role-selector .btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentRole = btn.dataset.role;
+        }
+
+        function loadKimiConfig() {
+            fetch('/api/settings/kimi')
+                .then(r => r.json())
+                .then(data => {
+                    const status = document.getElementById('kimiStatus');
+                    if (data.configured) {
+                        status.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Kimi AI is configured (Model: ${data.model})</div>`;
+                    } else {
+                        status.innerHTML = `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Kimi AI not configured. Please enter your API key.</div>`;
+                    }
+                });
+        }
+
+        document.getElementById('kimiSettingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('api_key', document.getElementById('kimiApiKey').value);
+            formData.append('base_url', document.getElementById('kimiBaseUrl').value);
+            formData.append('model', document.getElementById('kimiModel').value);
+
+            fetch('/api/settings/kimi', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadKimiConfig();
+                        alert('Kimi AI configuration saved!');
+                    }
+                });
+        });
+
+        function sendQuery() {
+            const query = document.getElementById('aiQuery').value;
+            const context = document.getElementById('aiContext').value;
+
+            if (!query) {
+                alert('Please enter a question or request');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('role', currentRole);
+            formData.append('query', query);
+            formData.append('context', context || '{}');
+
+            document.getElementById('aiResponseContent').innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Analyzing...</p></div>';
+            document.getElementById('aiResponse').classList.remove('d-none');
+
+            fetch('/api/kimi/query', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    const content = document.getElementById('aiResponseContent');
+                    if (data.success && data.response) {
+                        // Convert markdown-like formatting to HTML
+                        let html = data.response
+                            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\n/g, '<br>');
+                        content.innerHTML = html;
+                    } else if (data.suggestions) {
+                        content.innerHTML = `<div class="alert alert-info">${data.suggestions.replace(/\n/g, '<br>')}</div>`;
+                    } else {
+                        content.innerHTML = `<div class="alert alert-danger">Error: ${data.error || 'Unknown error'}</div>`;
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('aiResponseContent').innerHTML = `<div class="alert alert-danger">Request failed: ${err}</div>`;
+                });
+        }
+
+        function quickAction(action) {
+            const prompts = {
+                'explain_vuln': 'Explain this vulnerability in detail including detection, exploitation (for authorized testing), and remediation:',
+                'next_steps': 'Based on my current findings, what should I investigate next?',
+                'analyze_finding': 'Analyze this security finding and provide severity assessment, impact, and recommendations:',
+                'craft_report': 'Help me craft a professional report section for this finding:'
+            };
+
+            document.getElementById('aiQuery').value = prompts[action] + '\n\n';
+            document.getElementById('aiQuery').focus();
+        }
+
+        function loadNotes() {
+            fetch('/api/notes')
+                .then(r => r.json())
+                .then(notes => {
+                    const container = document.getElementById('notesList');
+                    if (notes.length === 0) {
+                        container.innerHTML = '<p class="text-muted text-center">No notes yet. Create your first note!</p>';
+                        return;
+                    }
+                    container.innerHTML = notes.map(note => `
+                        <div class="note-card" onclick="openNote(${note.id})">
+                            <h6 class="mb-2"><i class="fas fa-sticky-note me-2"></i>${note.title}</h6>
+                            <p class="small text-muted mb-2">${note.content ? note.content.substring(0, 100) + '...' : 'No content'}</p>
+                            ${note.tags ? `<span class="badge bg-info">${note.tags}</span>` : ''}
+                            <small class="text-muted d-block mt-2">${new Date(note.created_at).toLocaleString()}</small>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function showNewNoteModal() {
+            document.getElementById('noteId').value = '';
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            document.getElementById('noteTags').value = '';
+            document.getElementById('noteModalTitle').textContent = 'New Note';
+            document.getElementById('deleteNoteBtn').style.display = 'none';
+            noteModal.show();
+        }
+
+        function openNote(id) {
+            fetch(`/api/notes/${id}`)
+                .then(r => r.json())
+                .then(note => {
+                    // Note endpoint doesn't exist, we'll get from list
+                    // For now, just show message
+                    alert('Note viewing will be implemented. Use the edit feature.');
+                });
+        }
+
+        function saveNote() {
+            const id = document.getElementById('noteId').value;
+            const formData = new FormData();
+            formData.append('title', document.getElementById('noteTitle').value);
+            formData.append('content', document.getElementById('noteContent').value);
+            formData.append('tags', document.getElementById('noteTags').value);
+
+            const url = id ? `/api/notes/${id}` : '/api/notes';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, { method, body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        noteModal.hide();
+                        loadNotes();
+                    }
+                });
+        }
+
+        function deleteCurrentNote() {
+            const id = document.getElementById('noteId').value;
+            if (id && confirm('Are you sure you want to delete this note?')) {
+                fetch(`/api/notes/${id}`, { method: 'DELETE' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            noteModal.hide();
+                            loadNotes();
+                        }
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
