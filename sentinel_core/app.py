@@ -33,8 +33,11 @@ DATABASE = 'db/sentinel.db'
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from engine.module_registry import registry, register_builtin_modules, ModuleMetadata
 from engine.task_queue import task_queue, JobStatus
+from engine.script_engine import engine as script_engine
 from models.intelligence import IntelligenceGraph, create_entity, create_relationship, EntityType, RelationshipType
 from integrations.kali_tools import kali_tools
+from integrations.advanced_tools import registry as tool_registry
+from reports.report_generator import generator as report_generator
 
 # Database Initialization
 def init_db():
@@ -408,6 +411,263 @@ def run_comprehensive_recon():
         'message': f'Comprehensive reconnaissance started for {domain}'
     })
 
+@app.route('/api/script/execute', methods=['POST'])
+@login_required
+def execute_custom_script():
+    """Execute a custom Python script or builtin template"""
+    script_name = request.form.get('script_name')
+    code = request.form.get('code')  # Raw code for ad-hoc execution
+    target = request.form.get('target')
+    case_id = int(request.form.get('case_id'))
+    
+    if not target:
+        return jsonify({'error': 'Target required'}), 400
+    
+    # Execute the script
+    result = script_engine.execute_script(
+        script_name=script_name,
+        code=code,
+        case_id=case_id,
+        target=target
+    )
+    
+    if result['status'] == 'success':
+        # Save discovered entities to database
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        
+        for entity in result.get('entities', []):
+            c.execute("""
+                INSERT INTO entities (case_id, entity_type, value, metadata)
+                VALUES (?, ?, ?, ?)
+            """, (case_id, entity['type'], entity['value'], 
+                  json.dumps(entity)))
+        
+        conn.commit()
+        conn.close()
+        
+        log_audit(session['user_id'], 'EXECUTE_SCRIPT', 
+                 f'Executed script {script_name or "custom"} on {target}', 
+                 request.remote_addr)
+        
+        return jsonify(result)
+    else:
+        return jsonify(result), 500
+
+@app.route('/api/script/save', methods=['POST'])
+@login_required
+def save_custom_script():
+    """Save a custom script for later use"""
+    name = request.form.get('name')
+    code = request.form.get('code')
+    author = session['username']
+    
+    if not name or not code:
+        return jsonify({'error': 'Name and code required'}), 400
+    
+    filename = script_engine.save_user_script(name, code, author)
+    
+    log_audit(session['user_id'], 'SAVE_SCRIPT', 
+             f'Saved custom script: {name}', request.remote_addr)
+    
+    return jsonify({
+        'status': 'success',
+        'filename': filename,
+        'message': f'Script "{name}" saved successfully'
+    })
+
+@app.route('/api/scripts/templates')
+@login_required
+def list_script_templates():
+    """List available builtin script templates"""
+    templates = list(script_engine.builtin_templates.keys())
+    return jsonify({
+        'templates': templates,
+        'count': len(templates)
+    })
+
+@app.route('/api/tools/list')
+@login_required
+def list_all_tools():
+    """List all available tools by category"""
+    categories = ['recon', 'vuln', 'exploit', 'post', 'network']
+    result = {}
+    for cat in categories:
+        result[cat] = tool_registry.get_available_tools_by_category(cat)
+    return jsonify(result)
+
+@app.route('/api/tool/execute', methods=['POST'])
+@login_required
+def execute_single_tool():
+    """Execute a single registered tool"""
+    tool_name = request.form.get('tool_name')
+    target = request.form.get('target')
+    custom_args = request.form.get('custom_args', '')
+    
+    if not tool_name or not target:
+        return jsonify({'error': 'Tool name and target required'}), 400
+    
+    args_list = custom_args.split() if custom_args else None
+    result = tool_registry.execute_tool(tool_name, target, args_list)
+    
+    return jsonify(result)
+
+@app.route('/api/recon/full-chain', methods=['POST'])
+@login_required
+def run_full_recon_chain():
+    """Run full reconnaissance chain using all available tools"""
+    target = request.form.get('target')
+    case_id = int(request.form.get('case_id'))
+    
+    if not target:
+        return jsonify({'error': 'Target required'}), 400
+    
+    # Submit to async queue (long running)
+    task_id = task_queue.submit_task(
+        module_id='full_recon_chain',
+        target=target,
+        case_id=case_id,
+        user_id=session['user_id'],
+        priority=2,
+        timeout=900,
+        max_retries=0
+    )
+    
+    log_audit(session['user_id'], 'FULL_RECON_CHAIN', 
+             f'Started full recon chain on {target}', request.remote_addr)
+    
+    return jsonify({
+        'status': 'queued',
+        'task_id': task_id,
+        'message': f'Full reconnaissance chain queued for {target}'
+    })
+
+@app.route('/api/report/generate/<int:case_id>', methods=['GET'])
+@login_required
+def generate_report(case_id):
+    """Generate comprehensive report for a case"""
+    format_type = request.args.get('format', 'html')
+    
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    
+    # Verify ownership and get case data
+    c.execute("SELECT * FROM cases WHERE id = ? AND user_id = ?", (case_id, session['user_id']))
+    case = c.fetchone()
+    if not case:
+        conn.close()
+        return jsonify({'error': 'Case not found'}), 404
+    
+    # Get entities and relationships
+    c.execute("SELECT * FROM entities WHERE case_id = ?", (case_id,))
+    entities_rows = c.fetchall()
+    c.execute("SELECT * FROM relationships WHERE case_id = ?", (case_id,))
+    relationships_rows = c.fetchall()
+    conn.close()
+    
+    # Build case data structure
+    case_data = {
+        'id': case[1],  # case ID
+        'name': case[2],
+        'target': case[2],  # Use name as target for now
+        'entities': [
+            {
+                'id': r[0],
+                'type': r[2],
+                'value': r[3],
+                'meta': json.loads(r[4]) if r[4] else {},
+                'source': json.loads(r[4]).get('source', 'manual') if r[4] else 'manual',
+                'confidence': json.loads(r[4]).get('confidence', 50) if r[4] else 50
+            }
+            for r in entities_rows
+        ],
+        'relationships': [
+            {
+                'id': r[0],
+                'source': r[2],
+                'target': r[3],
+                'type': r[4],
+                'confidence': 50
+            }
+            for r in relationships_rows
+        ]
+    }
+    
+    # Generate report
+    filepath = report_generator.save_report(case_data, format=format_type)
+    
+    log_audit(session['user_id'], 'GENERATE_REPORT', 
+             f'Generated {format_type} report for case {case_id}', 
+             request.remote_addr)
+    
+    return jsonify({
+        'status': 'success',
+        'filepath': filepath,
+        'download_url': f'/api/report/download/{filepath.split("/")[-1]}'
+    })
+
+@app.route('/api/report/download/<filename>')
+@login_required
+def download_report(filename):
+    """Download a generated report"""
+    from flask import send_file
+    filepath = os.path.join(report_generator.templates_path, filename)
+    if os.path.exists(filepath):
+        return send_file(filepath, as_attachment=True)
+    return jsonify({'error': 'File not found'}), 404
+
+@app.route('/api/graph/visualize/<int:case_id>')
+@login_required
+def visualize_graph(case_id):
+    """Get graph data for visualization"""
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    
+    c.execute("SELECT * FROM entities WHERE case_id = ?", (case_id,))
+    entities_rows = c.fetchall()
+    c.execute("SELECT * FROM relationships WHERE case_id = ?", (case_id,))
+    relationships_rows = c.fetchall()
+    conn.close()
+    
+    nodes = []
+    entity_map = {}
+    for i, row in enumerate(entities_rows):
+        eid, _, etype, value, metadata, _ = row
+        entity_map[eid] = i
+        try:
+            meta = json.loads(metadata) if metadata else {}
+        except:
+            meta = {}
+        
+        color = '#667eea'
+        if etype == 'IP': color = '#e74c3c'
+        elif etype == 'DOMAIN': color = '#3498db'
+        elif etype == 'VULNERABILITY': color = '#e67e22'
+        elif etype == 'EMAIL': color = '#9b59b6'
+        
+        nodes.append({
+            'id': i,
+            'label': value[:30] + '...' if len(value) > 30 else value,
+            'group': etype,
+            'color': color,
+            'data': {'value': value, 'metadata': meta}
+        })
+    
+    edges = []
+    for row in relationships_rows:
+        _, _, src_id, tgt_id, rtype, _ = row
+        if src_id in entity_map and tgt_id in entity_map:
+            edges.append({
+                'from': entity_map[src_id],
+                'to': entity_map[tgt_id],
+                'label': rtype
+            })
+    
+    return jsonify({
+        'nodes': nodes,
+        'edges': edges
+    })
+
 @app.route('/api/graph/export/<int:case_id>')
 @login_required
 def export_graph(case_id):
@@ -491,8 +751,21 @@ if __name__ == '__main__':
         if module_data['executor']:
             task_queue.register_executor(module_id, module_data['executor'])
     
+    # Register advanced tool executors
+    def full_recon_executor(task):
+        """Execute full reconnaissance chain"""
+        return tool_registry.run_recon_chain(task.target)
+    
+    task_queue.register_executor('full_recon_chain', full_recon_executor)
+    
+    def kali_comprehensive_executor(task):
+        """Execute comprehensive Kali tools scan"""
+        return kali_tools.run_comprehensive_recon(task.target)
+    
+    task_queue.register_executor('kali_comprehensive', kali_comprehensive_executor)
+    
     # Start async workers
-    task_queue.start_workers(num_workers=3)
+    task_queue.start_workers(num_workers=5)  # Increased workers for parallel execution
     
     # Register result callback to save results to DB
     def on_task_complete(task):
@@ -525,14 +798,35 @@ if __name__ == '__main__':
     
     task_queue.on_result(on_task_complete)
     
-    print("[*] Sentinel Core OSINT Framework initialized")
+    print("=" * 70)
+    print("🛡️  SENTINEL CORE - ELITE OSINT PLATFORM INITIALIZED")
+    print("=" * 70)
     print("[*] Module execution engine: ACTIVE")
-    print("[*] Task queue workers: 3")
+    print("[*] Task queue workers: 5 (parallel)")
     print("[*] Circuit breakers: ENABLED")
-    print("[*] Kali/Parrot tools integration: READY")
-    print(f"[*] Available tools: {', '.join(kali_tools.get_available_tools()) or 'None detected'}")
-    print("[*] Access the web interface at http://localhost:5001")
-    print("[*] Default credentials: admin / admin123")
+    print("[*] Dynamic script engine: READY (GOD MODE)")
+    print("[*] Advanced tool integration: 20+ TOOLS")
+    print("[*] Report generator: HTML/STIX/JSON/PDF")
+    print(f"[*] Available Kali tools: {', '.join(kali_tools.get_available_tools()) or 'None detected'}")
+    print(f"[*] Registered tools: {len(tool_registry.tools)}")
+    print(f"[*] Script templates: {len(script_engine.builtin_templates)}")
+    print("-" * 70)
+    print("📖 QUICK START:")
+    print("   1. Access web UI: http://localhost:5001")
+    print("   2. Login: admin / admin123")
+    print("   3. Create a case and run recon chains")
+    print("   4. Execute custom scripts via API")
+    print("   5. Generate Maltego-style reports")
+    print("-" * 70)
+    print("⚡ API ENDPOINTS:")
+    print("   POST /api/script/execute    - Run custom Python scripts")
+    print("   POST /api/script/save       - Save custom scripts")
+    print("   GET  /api/scripts/templates - List builtin templates")
+    print("   POST /api/tool/execute      - Execute single tool")
+    print("   POST /api/recon/full-chain  - Full recon automation")
+    print("   GET  /api/report/generate   - Generate reports")
+    print("   GET  /api/graph/visualize   - Graph visualization data")
+    print("=" * 70)
     
     try:
         app.run(debug=False, host='0.0.0.0', port=5001)
