@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Tools - Sentinel Core{% endblock %}
+{% block header_title %}Security Tools{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-plus-circle"></i> Create Custom Tool</h3>
+        <button class="btn btn-primary" onclick="document.getElementById('createToolModal').classList.add('active')">
+            <i class="fas fa-plus"></i> New Tool
+        </button>
+    </div>
+</div>
+
+{% for category, tools in tool_categories.items() %}
+<div class="tool-category">
+    <div class="tool-category-header">
+        <i class="fas {% if category == 'Reconnaissance' %}fa-search{% elif category == 'Web Analysis' %}fa-globe{% elif category == 'Network' %}fa-network-wired{% elif category == 'Vulnerability' %}fa-bug{% elif category == 'Forensics' %}fa-microscope{% else %}fa-toolbox{% endif %}"></i>
+        <h3 class="tool-category-title">{{ category }}</h3>
+    </div>
+    <div class="tool-grid">
+        {% for tool in tools %}
+        <div class="tool-card">
+            <div class="tool-card-header">
+                <div class="tool-card-icon"><i class="fas fa-terminal"></i></div>
+                <span class="tool-card-title">{{ tool.replace('_', ' ').title() }}</span>
+            </div>
+            <p class="tool-card-desc">Execute {{ tool }} on selected entity</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+{% if custom_tools %}
+<div class="tool-category">
+    <div class="tool-category-header">
+        <i class="fas fa-wrench"></i>
+        <h3 class="tool-category-title">Custom Tools</h3>
+    </div>
+    <div class="tool-grid">
+        {% for tool in custom_tools %}
+        <div class="tool-card">
+            <div class="tool-card-header">
+                <div class="tool-card-icon"><i class="fas fa-code"></i></div>
+                <span class="tool-card-title">{{ tool.name }}</span>
+            </div>
+            <p class="tool-card-desc">{{ tool.description or 'No description' }}</p>
+            <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">
+                Category: {{ tool.category }} | Command: <code style="background: var(--bg-primary); padding: 2px 6px; border-radius: 4px;">{{ tool.command_template[:50] }}...</code>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Create Tool Modal -->
+<div class="modal-overlay" id="createToolModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Create Custom Tool</h3>
+            <button class="modal-close" onclick="document.getElementById('createToolModal').classList.remove('active')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('create_custom_tool') }}">
+            <div class="form-group">
+                <label class="form-label">Tool Name *</label>
+                <input type="text" name="name" class="form-control" placeholder="e.g., Nmap Fast Scan" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select name="category" class="form-control" required>
+                    <option value="Reconnaissance">Reconnaissance</option>
+                    <option value="Web Analysis">Web Analysis</option>
+                    <option value="Network">Network</option>
+                    <option value="Vulnerability">Vulnerability</option>
+                    <option value="Forensics">Forensics</option>
+                    <option value="Custom">Custom</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Command Template *</label>
+                <textarea name="command_template" class="form-control" rows="4" placeholder="e.g., nmap -T4 -F {{target}}" required></textarea>
+                <small style="color: var(--text-muted);">Use {{ '{{target}}' }} as placeholder for the target</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Parameters (JSON)</label>
+                <textarea name="parameters" class="form-control" rows="2" placeholder='{"target": "example.com"}'>{}</textarea>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('createToolModal').classList.remove('active')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Tool</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

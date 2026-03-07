@@ -4,23 +4,45 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Dependencies
+.Python
+env/
 venv/
 .venv/
+.ENV
+.ENV.local
 .env
 .env.local
-*.env.*
+.env.*
+
+# Database
+*.db
 
 # Logs
 *.log
 
-# Editors
+# IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # Build artifacts
 dist/
 build/
-target/
+*.out
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Dependencies
+node_modules/
+.mypy_cache/
+.pytest_cache/
 ```

@@ -1,284 +1,135 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Sentinel Core</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-            display: flex;
-            min-height: 100vh;
-        }
-        .sidebar {
-            width: 260px;
-            background: #1e293b;
-            padding: 1.5rem;
-            border-right: 1px solid #334155;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #334155;
-        }
-        .logo i {
-            font-size: 1.5rem;
-            color: #3b82f6;
-        }
-        .logo span {
-            font-weight: 700;
-            font-size: 1.2rem;
-            background: linear-gradient(to right, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.875rem 1rem;
-            color: #94a3b8;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            transition: all 0.2s;
-        }
-        .nav-item:hover, .nav-item.active {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-        }
-        .nav-item i { width: 20px; text-align: center; }
-        .main-content {
-            margin-left: 260px;
-            flex: 1;
-            padding: 2rem;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .user-menu img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #3b82f6;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: #1e293b;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid #334155;
-        }
-        .stat-card .icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-        .stat-card.blue .icon { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .stat-card.purple .icon { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
-        .stat-card.green .icon { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .stat-card.orange .icon { background: rgba(249, 115, 22, 0.2); color: #f97316; }
-        .stat-card h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-        .stat-card p {
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-        .quick-actions {
-            background: #1e293b;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid #334155;
-        }
-        .quick-actions h2 {
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-        }
-        .btn-secondary {
-            background: #334155;
-            color: #e2e8f0;
-        }
-        .btn-secondary:hover {
-            background: #475569;
-        }
-        .tribute-banner {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: linear-gradient(90deg, rgba(249, 115, 22, 0.1), rgba(59, 130, 246, 0.1));
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid rgba(249, 115, 22, 0.2);
-        }
-        .tribute-banner p {
-            color: #f97316;
-            font-weight: 600;
-        }
-        .tribute-banner small {
-            color: #94a3b8;
-        }
-    </style>
-</head>
-<body>
-    <div class="sidebar">
-        <div class="logo">
-            <i class="fas fa-shield-halved"></i>
-            <span>Sentinel Core</span>
+{% extends "base.html" %}
+{% block title %}Dashboard - Sentinel Core{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_cases }}</div>
+        <div class="stat-label">Total Cases</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_entities }}</div>
+        <div class="stat-label">Entities Tracked</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ scans_run }}</div>
+        <div class="stat-label">Scans Executed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ notes_count }}</div>
+        <div class="stat-label">Notes Created</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-folder-open"></i> Recent Cases</h3>
+            <a href="{{ url_for('cases') }}" class="btn btn-secondary btn-sm">View All</a>
         </div>
-        <a href="/" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="/cases" class="nav-item"><i class="fas fa-folder-open"></i> Cases</a>
-        <a href="/notes" class="nav-item"><i class="fas fa-sticky-note"></i> Notes</a>
-        <a href="/reports" class="nav-item"><i class="fas fa-file-alt"></i> Reports</a>
-        <a href="/terminal" class="nav-item"><i class="fas fa-terminal"></i> Terminal</a>
-        <a href="/settings" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
-        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #334155;">
-            <a href="/logout" class="nav-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Owner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in recent_cases %}
+                    <tr>
+                        <td><a href="{{ url_for('view_case', case_id=case.id) }}" style="color: var(--neon-blue); text-decoration: none;">{{ case.title }}</a></td>
+                        <td><span class="badge badge-{{ 'success' if case.status == 'active' else 'warning' }}">{{ case.status }}</span></td>
+                        <td><span class="badge badge-{{ 'danger' if case.priority == 'high' else 'info' if case.priority == 'medium' else 'success' }}">{{ case.priority }}</span></td>
+                        <td>{{ case.owner_name or 'Unassigned' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No cases yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <div class="main-content">
-        <div class="header">
-            <h1>Dashboard</h1>
-            <div class="user-menu">
-                <span>{{ session.get('user', 'User') }}</span>
-                <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:bold;">{{ session.get('user', 'U')[0].upper() }}</div>
-            </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-history"></i> Recent Activity</h3>
         </div>
-
-        <div class="stats-grid">
-            <div class="stat-card blue">
-                <div class="icon"><i class="fas fa-folder"></i></div>
-                <h3>{{ cases }}</h3>
-                <p>Active Cases</p>
-            </div>
-            <div class="stat-card purple">
-                <div class="icon"><i class="fas fa-sticky-note"></i></div>
-                <h3>{{ notes }}</h3>
-                <p>Notes</p>
-            </div>
-            <div class="stat-card green">
-                <div class="icon"><i class="fas fa-check-circle"></i></div>
-                <h3>100%</h3>
-                <p>System Status</p>
-            </div>
-            <div class="stat-card orange">
-                <div class="icon"><i class="fas fa-robot"></i></div>
-                <h3>Kimi AI</h3>
-                <p>Ready</p>
-            </div>
-        </div>
-
-        <div class="quick-actions">
-            <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
-            <div class="action-buttons">
-                <button onclick="document.getElementById('newCaseModal').style.display='flex'" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> New Case
-                </button>
-                <a href="/notes" class="btn btn-secondary">
-                    <i class="fas fa-pen"></i> Create Note
-                </a>
-                <a href="/terminal" class="btn btn-secondary">
-                    <i class="fas fa-terminal"></i> Open Terminal
-                </a>
-            </div>
-        </div>
-
-        <div class="tribute-banner">
-            <p><i class="fas fa-flag"></i> Tribute to Indian Armed Forces</p>
-            <small>Army • Navy • Air Force | Service Before Self</small>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_activity %}
+                    <tr>
+                        <td>{{ log.username or 'System' }}</td>
+                        <td>{{ log.action }}</td>
+                        <td style="color: var(--text-muted); font-size: 13px;">{{ log.created_at }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No activity yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 
-    <!-- New Case Modal -->
-    <div id="newCaseModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
-        <div style="background:#1e293b;padding:2rem;border-radius:12px;width:100%;max-width:500px;border:1px solid #334155;">
-            <h2 style="margin-bottom:1.5rem;">Create New Case</h2>
-            <input type="text" id="caseName" placeholder="Case Name" style="width:100%;padding:0.875rem;margin-bottom:1rem;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#fff;">
-            <textarea id="caseDesc" placeholder="Description" rows="4" style="width:100%;padding:0.875rem;margin-bottom:1.5rem;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#fff;"></textarea>
-            <div style="display:flex;gap:1rem;justify-content:flex-end;">
-                <button onclick="document.getElementById('newCaseModal').style.display='none'" class="btn btn-secondary">Cancel</button>
-                <button onclick="createCase()" class="btn btn-primary">Create Case</button>
-            </div>
-        </div>
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-plus-circle"></i> Quick Actions</h3>
     </div>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="document.getElementById('newCaseModal').classList.add('active')">
+            <i class="fas fa-folder-plus"></i> New Case
+        </button>
+        <a href="{{ url_for('tools') }}" class="btn btn-secondary">
+            <i class="fas fa-toolbox"></i> Run Scan
+        </a>
+        <button class="btn btn-secondary" onclick="openAIModal()">
+            <i class="fas fa-brain"></i> AI Assistant
+        </button>
+    </div>
+</div>
 
-    <script>
-        async function createCase() {
-            const name = document.getElementById('caseName').value;
-            const desc = document.getElementById('caseDesc').value;
-            
-            const res = await fetch('/api/create_case', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name, description: desc})
-            });
-            
-            if (res.ok) {
-                window.location.href = '/cases';
-            } else {
-                alert('Failed to create case');
-            }
-        }
-    </script>
-</body>
-</html>
+<!-- New Case Modal -->
+<div class="modal-overlay" id="newCaseModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Create New Case</h3>
+            <button class="modal-close" onclick="document.getElementById('newCaseModal').classList.remove('active')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('create_case') }}">
+            <div class="form-group">
+                <label class="form-label">Case Title *</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Priority</label>
+                <select name="priority" class="form-control">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('newCaseModal').classList.remove('active')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Case</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

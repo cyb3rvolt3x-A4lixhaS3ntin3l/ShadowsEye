@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs - Sentinel Core{% endblock %}
+{% block header_title %}Audit Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-list-alt"></i> System Audit Trail</h3>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Resource</th>
+                    <th>IP Address</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>#{{ log.id }}</td>
+                    <td>{{ log.username or 'System' }}</td>
+                    <td><span class="badge badge-info">{{ log.action }}</span></td>
+                    <td>{{ log.resource_type }} #{{ log.resource_id or '-' }}</td>
+                    <td style="font-family: monospace;">{{ log.ip_address or 'N/A' }}</td>
+                    <td style="color: var(--text-muted); font-size: 13px;">{{ log.created_at }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No audit logs found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

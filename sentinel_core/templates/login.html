@@ -1,146 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sentinel Core</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-        }
-        .login-container {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 3rem;
-            border-radius: 16px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            width: 100%;
-            max-width: 420px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .logo {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .logo i {
-            font-size: 3rem;
-            color: #3b82f6;
-            margin-bottom: 1rem;
-        }
-        .logo h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(to right, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .logo p {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #cbd5e1;
-            font-size: 0.9rem;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 0.875rem;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-        .btn-login {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-        }
-        .error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            color: #fca5a5;
-            padding: 0.875rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-        .tribute {
-            margin-top: 2rem;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-        .tribute i {
-            color: #f97316;
-            margin-right: 0.5rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <div class="logo">
-            <i class="fas fa-shield-halved"></i>
-            <h1>Sentinel Core</h1>
-            <p>Elite Intelligence Platform</p>
+{% extends "base.html" %}
+{% block content_no_auth %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="login-logo-icon"><i class="fas fa-shield-halved"></i></div>
+            <h1 class="login-title">Sentinel Core</h1>
+            <p style="color: var(--text-secondary); margin-top: 8px;">Elite Cybersecurity Platform</p>
         </div>
         
-        {% if error %}
-        <div class="error">
-            <i class="fas fa-exclamation-circle"></i> {{ error }}
-        </div>
-        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast {{ category }}" style="margin-bottom: 16px;">
+                        <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         
-        <form method="POST">
+        <form method="POST" action="{{ url_for('login') }}">
             <div class="form-group">
-                <label><i class="fas fa-user"></i> Username</label>
-                <input type="text" name="username" required placeholder="Enter username">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Enter username" required autofocus>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-lock"></i> Password</label>
-                <input type="password" name="password" required placeholder="Enter password">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter password" required>
             </div>
-            <button type="submit" class="btn-login">
-                <i class="fas fa-sign-in-alt"></i> Secure Login
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 24px;">
+                <i class="fas fa-sign-in-alt"></i> Login
             </button>
         </form>
         
-        <div class="tribute">
-            <p><i class="fas fa-flag"></i> Dedicated to Indian Armed Forces</p>
-            <p style="margin-top:0.5rem; font-size:0.7rem;">Army • Navy • Air Force</p>
+        <div style="text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 13px;">
+            <p>Default credentials: admin / admin123</p>
         </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

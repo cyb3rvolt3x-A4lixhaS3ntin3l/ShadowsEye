@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sentinel Core{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    {% if session.get('user_id') %}
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+                    <span>Sentinel Core</span>
+                </div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <span class="nav-item-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('cases') }}" class="nav-item {% if 'case' in request.endpoint %}active{% endif %}">
+                        <span class="nav-item-icon"><i class="fas fa-folder-open"></i></span>
+                        <span>Cases</span>
+                    </a>
+                    <a href="{{ url_for('tools') }}" class="nav-item {% if request.endpoint == 'tools' %}active{% endif %}">
+                        <span class="nav-item-icon"><i class="fas fa-toolbox"></i></span>
+                        <span>Tools</span>
+                    </a>
+                    <a href="{{ url_for('playbooks') }}" class="nav-item {% if request.endpoint == 'playbooks' %}active{% endif %}">
+                        <span class="nav-item-icon"><i class="fas fa-book"></i></span>
+                        <span>Playbooks</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Intelligence</div>
+                    <a href="{{ url_for('terminal') }}" class="nav-item {% if request.endpoint == 'terminal' %}active{% endif %}">
+                        <span class="nav-item-icon"><i class="fas fa-terminal"></i></span>
+                        <span>Terminal</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="openAIModal()">
+                        <span class="nav-item-icon"><i class="fas fa-brain"></i></span>
+                        <span>AI Assistant</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="{{ url_for('settings') }}" class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}">
+                        <span class="nav-item-icon"><i class="fas fa-cog"></i></span>
+                        <span>Settings</span>
+                    </a>
+                    {% if session.get('role') == 'admin' %}
+                    <a href="{{ url_for('audit_logs') }}" class="nav-item {% if request.endpoint == 'audit_logs' %}active{% endif %}">
+                        <span class="nav-item-icon"><i class="fas fa-list-alt"></i></span>
+                        <span>Audit Logs</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 style="font-size: 20px;">{% block header_title %}Dashboard{% endblock %}</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-menu" onclick="toggleUserMenu()">
+                        <div class="user-avatar">{{ session.username[0].upper() }}</div>
+                        <span>{{ session.username }}</span>
+                        <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </header>
+
+            <div class="page-content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="toast-container" id="toastContainer">
+                            {% for category, message in messages %}
+                                <div class="toast {{ category }}">
+                                    <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    {% else %}
+        {% block content_no_auth %}{% endblock %}
+    {% endif %}
+
+    <!-- AI Modal -->
+    <div class="modal-overlay" id="aiModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-brain"></i> AI Assistant</h3>
+                <button class="modal-close" onclick="closeAIModal()">&times;</button>
+            </div>
+            <div class="ai-chat-container">
+                <div class="ai-messages" id="aiMessages">
+                    <div class="ai-message">
+                        <div class="ai-message-content">Hello! I'm your cybersecurity AI assistant. How can I help you today?</div>
+                    </div>
+                </div>
+                <div class="ai-input-container">
+                    <select class="form-control" id="aiRole" style="width: 200px;">
+                        <option value="cybersecurity_analyst">Analyst</option>
+                        <option value="red_team">Red Team</option>
+                        <option value="blue_team">Blue Team</option>
+                        <option value="threat_hunter">Threat Hunter</option>
+                        <option value="forensics">Forensics</option>
+                        <option value="pentester">Pentester</option>
+                    </select>
+                    <input type="text" class="form-control ai-input" id="aiInput" placeholder="Ask anything..." onkeypress="if(event.key==='Enter')sendAIMessage()">
+                    <button class="btn btn-primary" onclick="sendAIMessage()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
