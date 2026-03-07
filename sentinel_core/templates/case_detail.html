@@ -1,246 +1,245 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Case Detail - Sentinel Core</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: #1e293b; padding: 1.5rem; border-right: 1px solid #334155; position: fixed; height: 100vh; overflow-y: auto; }
-        .logo { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #334155; }
-        .logo i { font-size: 1.5rem; color: #3b82f6; }
-        .logo span { font-weight: 700; font-size: 1.2rem; background: linear-gradient(to right, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 8px; margin-bottom: 0.5rem; transition: all 0.2s; }
-        .nav-item:hover, .nav-item.active { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .nav-item i { width: 20px; text-align: center; }
-        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .header h1 { font-size: 1.8rem; font-weight: 700; }
-        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
-        .btn-secondary { background: #334155; color: #e2e8f0; }
-        .entities-section { background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; margin-bottom: 2rem; }
-        .entity-list { margin-top: 1rem; }
-        .entity-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #0f172a; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid #334155; }
-        .entity-info { display: flex; align-items: center; gap: 1rem; }
-        .entity-type { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
-        .type-domain { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .type-ip { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .type-email { background: rgba(249, 115, 22, 0.2); color: #f97316; }
-        .entity-actions { display: flex; gap: 0.5rem; }
-        .action-btn { width: 36px; height: 36px; border-radius: 8px; border: none; background: #334155; color: #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; position: relative; }
-        .action-btn:hover { background: #3b82f6; }
-        .actions-menu { position: absolute; top: 100%; right: 0; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 0.5rem; min-width: 200px; display: none; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .actions-menu.show { display: block; }
-        .menu-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-        .menu-item:hover { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .add-entity-form { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .add-entity-form input, .add-entity-form select { padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; flex: 1; min-width: 150px; }
-        .ai-panel { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1)); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3); margin-top: 2rem; }
-        .ai-chat { background: #0f172a; border-radius: 8px; padding: 1rem; margin-top: 1rem; max-height: 300px; overflow-y: auto; }
-        .ai-message { margin-bottom: 1rem; padding: 0.75rem; background: #1e293b; border-radius: 8px; border-left: 3px solid #3b82f6; }
-        .ai-input { display: flex; gap: 0.5rem; margin-top: 1rem; }
-        .ai-input input { flex: 1; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; }
-    </style>
-</head>
-<body>
-    <div class="sidebar">
-        <div class="logo"><i class="fas fa-shield-halved"></i><span>Sentinel Core</span></div>
-        <a href="/" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="/cases" class="nav-item active"><i class="fas fa-folder-open"></i> Cases</a>
-        <a href="/notes" class="nav-item"><i class="fas fa-sticky-note"></i> Notes</a>
-        <a href="/reports" class="nav-item"><i class="fas fa-file-alt"></i> Reports</a>
-        <a href="/terminal" class="nav-item"><i class="fas fa-terminal"></i> Terminal</a>
-        <a href="/settings" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
-        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #334155;">
-            <a href="/logout" class="nav-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
+{% extends "base.html" %}
+{% block title %}{{ case.title }} - Sentinel Core{% endblock %}
+{% block header_title %}Case #{{ case.id }}{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title">{{ case.title }}</h3>
+        <div style="display: flex; gap: 12px;">
+            <span class="badge badge-{{ 'success' if case.status == 'active' else 'warning' }}">{{ case.status }}</span>
+            <span class="badge badge-{{ 'danger' if case.priority == 'high' else 'info' }}">{{ case.priority }}</span>
+            <a href="{{ url_for('graph_view', case_id=case.id) }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-project-diagram"></i> Graph View
+            </a>
         </div>
     </div>
-    <div class="main-content">
-        <div class="header">
-            <h1><i class="fas fa-folder"></i> {{ case[1] }}</h1>
-            <div style="display:flex;gap:1rem;">
-                <button onclick="generateReport()" class="btn btn-secondary"><i class="fas fa-file-export"></i> Generate Report</button>
-                <button onclick="document.getElementById('aiPanel').scrollIntoView({behavior:'smooth'})" class="btn btn-primary"><i class="fas fa-robot"></i> Ask Kimi AI</button>
+    <p style="color: var(--text-secondary);">{{ case.description or 'No description' }}</p>
+    <div style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
+        <span>Owner: {{ case.owner_name or 'Unassigned' }}</span> | 
+        <span>Created: {{ case.created_at }}</span>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Entities -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-database"></i> Entities</h3>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('addEntityModal').classList.add('active')">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Value</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entity in entities %}
+                    <tr>
+                        <td><span class="badge badge-info entity-type-{{ entity.entity_type }}">{{ entity.entity_type }}</span></td>
+                        <td style="font-family: monospace;">{{ entity.entity_value }}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="showScanTools({{ entity.id }}, '{{ entity.entity_type }}', '{{ entity.entity_value }}')">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <form method="POST" action="{{ url_for('delete_entity', entity_id=entity.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this entity?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No entities yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-sticky-note"></i> Notes</h3>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('addNoteModal').classList.add('active')">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto;">
+            {% for note in notes %}
+            <div class="scan-result-card">
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+                    {{ note.author_name or 'Unknown' }} • {{ note.created_at }}
+                    {% if note.ai_enhanced %}<span class="badge badge-warning" style="font-size: 10px;">AI Enhanced</span>{% endif %}
+                </div>
+                <div style="white-space: pre-wrap;">{{ note.content }}</div>
+            </div>
+            {% else %}
+            <p style="text-align: center; color: var(--text-muted); padding: 20px;">No notes yet</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Scan Results -->
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-radar"></i> Recent Scan Results</h3>
+    </div>
+    {% for result in scan_results %}
+    <div class="scan-result-card">
+        <div class="scan-result-header">
+            <div>
+                <span class="scan-result-tool">{{ result.tool_name }}</span>
+                <span style="color: var(--text-muted); margin-left: 12px;">on {{ result.entity_type }}: {{ result.entity_value }}</span>
+            </div>
+            <div class="scan-result-status">
+                <span class="badge badge-success">Completed</span>
+                <span style="color: var(--text-muted); font-size: 13px;">{{ result.created_at }}</span>
             </div>
         </div>
+        <div class="code-block" style="max-height: 300px; overflow-y: auto;">
+            <pre>{{ result.results | tojson(indent=2) }}</pre>
+        </div>
+    </div>
+    {% else %}
+    <p style="text-align: center; color: var(--text-muted); padding: 20px;">No scan results yet. Add an entity and run a scan!</p>
+    {% endfor %}
+</div>
 
-        <div class="entities-section">
-            <h2><i class="fas fa-network-wired"></i> Entities</h2>
-            <div class="add-entity-form">
-                <select id="entityType">
+<!-- Add Entity Modal -->
+<div class="modal-overlay" id="addEntityModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Add Entity</h3>
+            <button class="modal-close" onclick="document.getElementById('addEntityModal').classList.remove('active')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('add_entity') }}">
+            <input type="hidden" name="case_id" value="{{ case.id }}">
+            <div class="form-group">
+                <label class="form-label">Entity Type *</label>
+                <select name="entity_type" class="form-control" required>
                     <option value="domain">Domain</option>
                     <option value="ip">IP Address</option>
                     <option value="email">Email</option>
                     <option value="url">URL</option>
+                    <option value="hash">File Hash</option>
                 </select>
-                <input type="text" id="entityValue" placeholder="Enter value (e.g., example.com)">
-                <input type="text" id="entityTags" placeholder="Tags (comma-separated)">
-                <button onclick="addEntity()" class="btn btn-primary"><i class="fas fa-plus"></i> Add Entity</button>
             </div>
-            <div class="entity-list" id="entityList">
-                {% for entity in entities %}
-                <div class="entity-item">
-                    <div class="entity-info">
-                        <div class="entity-type type-{{ entity[2] }}"><i class="fas fa-{{ 'globe' if entity[2]=='domain' else 'server' if entity[2]=='ip' else 'envelope' }}"></i></div>
-                        <div>
-                            <strong>{{ entity[3] }}</strong>
-                            <div style="font-size:0.8rem;color:#64748b;">{{ entity[4] }}</div>
-                        </div>
-                    </div>
-                    <div class="entity-actions">
-                        <button class="action-btn" onclick="toggleActions(this, '{{ entity[2] }}', '{{ entity[3] }}')"><i class="fas fa-ellipsis-v"></i></button>
-                    </div>
-                </div>
-                {% endfor %}
+            <div class="form-group">
+                <label class="form-label">Entity Value *</label>
+                <input type="text" name="entity_value" class="form-control" placeholder="e.g., example.com" required>
             </div>
-        </div>
-
-        <div class="ai-panel" id="aiPanel">
-            <h2><i class="fas fa-brain"></i> Kimi AI Assistant</h2>
-            <p style="color:#94a3b8;margin-top:0.5rem;">Ask anything about this case. Kimi will analyze context automatically.</p>
-            <div class="ai-chat" id="aiChat">
-                <div class="ai-message"><strong>Kimi AI:</strong> Hello! I'm ready to assist with your investigation. Click on any entity to analyze it, or ask me a question below.</div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('addEntityModal').classList.remove('active')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Entity</button>
             </div>
-            <div class="ai-input">
-                <input type="text" id="aiQuery" placeholder="Ask Kimi AI...">
-                <button onclick="askAI()" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
+        </form>
     </div>
+</div>
 
-    <script>
-        let currentEntity = null;
-        
-        async function addEntity() {
-            const type = document.getElementById('entityType').value;
-            const value = document.getElementById('entityValue').value;
-            const tags = document.getElementById('entityTags').value;
-            const res = await fetch('/api/add_entity', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({case_id: {{ case[0] }}, type, value, tags})
-            });
-            if (res.ok) location.reload();
-        }
+<!-- Add Note Modal -->
+<div class="modal-overlay" id="addNoteModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Add Note</h3>
+            <button class="modal-close" onclick="document.getElementById('addNoteModal').classList.remove('active')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('add_note') }}">
+            <input type="hidden" name="case_id" value="{{ case.id }}">
+            <div class="form-group">
+                <label class="form-label">Content *</label>
+                <textarea name="content" class="form-control" rows="6" required></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" name="ai_enhanced"> AI Enhance (requires API key)
+                </label>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('addNoteModal').classList.remove('active')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Note</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-        async function getActions(type, target) {
-            const res = await fetch('/api/get_entity_actions', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({type})
-            });
-            return await res.json();
-        }
+<!-- Scan Tools Modal -->
+<div class="modal-overlay" id="scanToolsModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Run Scan on <span id="scanTarget" style="color: var(--neon-blue);"></span></h3>
+            <button class="modal-close" onclick="document.getElementById('scanToolsModal').classList.remove('active')">&times;</button>
+        </div>
+        <div id="scanToolsList" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;"></div>
+    </div>
+</div>
 
-        async function toggleActions(btn, type, value) {
-            // Close other menus
-            document.querySelectorAll('.actions-menu').forEach(m => m.remove());
-            
-            const menu = document.createElement('div');
-            menu.className = 'actions-menu show';
-            btn.parentNode.appendChild(menu);
+<script>
+function showScanTools(entityId, entityType, entityValue) {
+    document.getElementById('scanTarget').textContent = entityValue;
+    const toolsByType = {
+        'domain': [
+            {id: 'whois_lookup', name: 'WHOIS Lookup', icon: 'fa-search'},
+            {id: 'dns_enum', name: 'DNS Enumeration', icon: 'fa-list'},
+            {id: 'subdomain_discovery', name: 'Subdomain Discovery', icon: 'fa-sitemap'},
+            {id: 'http_probe', name: 'HTTP Probe', icon: 'fa-globe'},
+            {id: 'ssl_check', name: 'SSL Check', icon: 'fa-lock'}
+        ],
+        'ip': [
+            {id: 'port_scan', name: 'Port Scan', icon: 'fa-network-wired'},
+            {id: 'geoip_lookup', name: 'GeoIP Lookup', icon: 'fa-map-marker-alt'},
+            {id: 'shodan_search', name: 'Shodan Search', icon: 'fa-search-location'}
+        ],
+        'email': [
+            {id: 'email_breach', name: 'Breach Check', icon: 'fa-envelope-open-text'}
+        ],
+        'url': [
+            {id: 'http_probe', name: 'HTTP Probe', icon: 'fa-globe'}
+        ],
+        'hash': [
+            {id: 'virustotal_scan', name: 'VirusTotal Scan', icon: 'fa-shield-virus'}
+        ]
+    };
+    
+    const tools = toolsByType[entityType] || [];
+    const container = document.getElementById('scanToolsList');
+    container.innerHTML = tools.map(tool => `
+        <button class="tool-card" onclick="executeScan(${entityId}, '${tool.id}')" style="padding: 16px; text-align: left;">
+            <div class="tool-card-header">
+                <div class="tool-card-icon"><i class="fas ${tool.icon}"></i></div>
+                <span class="tool-card-title">${tool.name}</span>
+            </div>
+        </button>
+    `).join('');
+    
+    document.getElementById('scanToolsModal').classList.add('active');
+}
 
-            const actions = await getActions(type, value);
-            
-            actions.forEach(action => {
-                const item = document.createElement('div');
-                item.className = 'menu-item';
-                item.innerHTML = `<i class="fas ${action.icon}"></i> ${action.name}`;
-                item.onclick = () => executeTool(action.id, value, action.ai);
-                menu.appendChild(item);
-            });
-
-            // Close when clicking outside
-            setTimeout(() => {
-                document.addEventListener('click', function close(e) {
-                    if (!menu.contains(e.target) && e.target !== btn) {
-                        menu.remove();
-                        document.removeEventListener('click', close);
-                    }
-                });
-            }, 100);
-        }
-
-        async function executeTool(toolId, target, isAI) {
-            document.querySelectorAll('.actions-menu').forEach(m => m.remove());
-            
-            if (isAI) {
-                addAiMessage(`🤖 Analyzing ${target} with Kimi AI...`);
-            } else {
-                addAiMessage(`🔧 Running ${toolId} on ${target}...`);
-            }
-
-            const res = await fetch('/api/execute_tool', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({tool_id: toolId, target})
-            });
-            const data = await res.json();
-            
-            if (data.result) {
-                // Format JSON output nicely
-                let formattedResult = data.result;
-                try {
-                    const parsed = JSON.parse(data.result);
-                    formattedResult = '<pre style="background:#1e293b;padding:10px;border-radius:5px;overflow-x:auto;">' + 
-                        JSON.stringify(parsed, null, 2) + '</pre>';
-                } catch(e) {
-                    formattedResult = data.result.replace(/\n/g, '<br>');
-                }
-                
-                const statusIcon = data.success !== false ? '✅' : '❌';
-                addAiMessage(`${statusIcon} <strong>${isAI ? 'AI Analysis' : toolId.toUpperCase()} Result:</strong><br>${formattedResult}`);
-            }
-            
-            // Refresh page to show new entity data if needed
-            setTimeout(() => location.reload(), 500);
-        }
-
-        async function askAI() {
-            const query = document.getElementById('aiQuery').value;
-            if (!query) return;
-            
-            addAiMessage(`<strong>You:</strong> ${query}`);
-            document.getElementById('aiQuery').value = '';
-
-            const res = await fetch('/api/ask_kimi', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({query, context: `Case: {{ case[1] }}, Entities: {{ entities|length }}`})
-            });
-            const data = await res.json();
-            
-            if (data.response) {
-                addAiMessage(`<strong>Kimi AI:</strong> ${data.response.replace(/\n/g, '<br>')}`);
-            } else if (data.error) {
-                addAiMessage(`<strong>Error:</strong> ${data.error}`);
-            }
-        }
-
-        function addAiMessage(html) {
-            const chat = document.getElementById('aiChat');
-            const msg = document.createElement('div');
-            msg.className = 'ai-message';
-            msg.innerHTML = html;
-            chat.appendChild(msg);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        async function generateReport() {
-            const res = await fetch('/api/generate_report', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({case_id: {{ case[0] }}})
-            });
-            const data = await res.json();
-            if (data.success) {
-                window.open(`/reports/${data.filename}`, '_blank');
-            }
-        }
-    </script>
-</body>
-</html>
+function executeScan(entityId, toolName) {
+    const btn = event.currentTarget;
+    btn.innerHTML = '<i class="fas fa-spinner spin"></i> Running...';
+    
+    fetch('/scan/execute', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `entity_id=${entityId}&tool_name=${toolName}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert(data.success ? 'Scan completed!' : 'Error: ' + (data.error || 'Unknown error'));
+        location.reload();
+    })
+    .catch(e => {
+        alert('Error: ' + e.message);
+        btn.disabled = false;
+    });
+}
+</script>
+{% endblock %}
