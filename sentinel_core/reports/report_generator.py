@@ -11,8 +11,10 @@ from collections import defaultdict
 
 class ReportGenerator:
     def __init__(self):
-        self.templates_path = "templates"
-        os.makedirs(self.templates_path, exist_ok=True)
+        # Use absolute path for evidence storage (forensic-grade, separate from templates)
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.evidence_path = os.path.join(base_dir, '..', 'evidence')
+        os.makedirs(self.evidence_path, exist_ok=True)
 
     def generate_executive_summary(self, case_data: Dict) -> str:
         """Generate high-level executive summary for leadership"""
@@ -384,7 +386,7 @@ class ReportGenerator:
         else:
             raise ValueError(f"Unsupported format: {format}")
         
-        filepath = os.path.join(self.templates_path, filename)
+        filepath = os.path.join(self.evidence_path, filename)
         with open(filepath, "w") as f:
             f.write(content)
         
