@@ -1,639 +1,638 @@
-#!/usr/bin/env python3
 """
-Kimi Moonshot AI Integration - Elite Hacker Assistant
-Integrates Moonshot AI (Kimi K2.5) via NVIDIA NIM for intelligent analysis, 
-report crafting, agentic automation, and tactical guidance.
-
-Uses NVIDIA NIM API with streaming support and thinking capabilities.
+Sentinel Core - Kimi Moonshot AI Integration
+Uses NVIDIA NIM API with moonshotai/kimi-k2.5 model
+Features:
+- Persistent API key and memory storage
+- Agentic capabilities with human-like reasoning
+- Context-aware analysis across all modules
+- Smart token management
+- Multiple elite security roles (IB, Mossad, RAW, etc.)
+- Auto-suggestions for next steps
+- Professional report formatting
 """
 
 import os
 import json
-import time
 import requests
-from typing import Dict, List, Any, Optional, Callable
-from dataclasses import dataclass, field
+import time
 from datetime import datetime
+from pathlib import Path
+from typing import Optional, List, Dict, Any, Generator
 
-
-@dataclass
-class KimiConfig:
-    """Configuration for Kimi AI via NVIDIA NIM"""
-    api_key: str = ""
-    base_url: str = "https://integrate.api.nvidia.com/v1"
-    model: str = "moonshotai/kimi-k2.5"
-    max_tokens: int = 16384
-    temperature: float = 1.0
-    top_p: float = 1.0
-    enable_thinking: bool = True
-    stream: bool = False
+class KimiAgent:
+    """Advanced Kimi AI Agent with persistent memory and agentic capabilities"""
     
-    # Agentic capabilities
-    enable_agentic: bool = False
-    memory_enabled: bool = True
-    auto_execute: bool = False  # Only execute if user confirms
-    
-    # Custom system prompt for agent behavior
-    custom_system_prompt: str = ""
-    
-    @classmethod
-    def from_env(cls) -> 'KimiConfig':
-        return cls(
-            api_key=os.environ.get('NVIDIA_API_KEY', os.environ.get('KIMI_API_KEY', '')),
-            base_url=os.environ.get('NVIDIA_BASE_URL', 'https://integrate.api.nvidia.com/v1'),
-            model=os.environ.get('KIMI_MODEL', 'moonshotai/kimi-k2.5'),
-            enable_thinking=os.environ.get('KIMI_ENABLE_THINKING', 'true').lower() == 'true',
-            enable_agentic=os.environ.get('KIMI_ENABLE_AGENTIC', 'false').lower() == 'true',
-        )
-
-
-class KimiAIAssistant:
-    """
-    Elite AI Assistant powered by Moonshot AI Kimi K2.5 via NVIDIA NIM
-    Roles: Ethical Hacker, Incident Responder, OSINT Specialist, Report Engineer
-    Features: Agentic capabilities, memory, streaming, thinking mode
-    
-    Supports custom roles and agentic automation with user confirmation.
-    """
-    
-    # Pre-defined elite security roles
-    SYSTEM_PROMPTS = {
-        'hacker': """You are an elite ethical hacker and penetration testing expert operating under strict authorization.
-Your role is to help security professionals understand vulnerabilities, attack vectors, and remediation strategies.
-
-Provide clear, actionable insights on:
-- Vulnerability analysis and exploitation techniques (for AUTHORIZED testing ONLY)
-- Attack chain reconstruction and kill chain analysis
-- Privilege escalation paths and lateral movement strategies
-- Persistence mechanisms and detection evasion (for DEFENSIVE purposes)
-- Tool selection and command crafting
-- Proof-of-concept development guidance
-
-ALWAYS emphasize:
-1. Legal authorization requirements
-2. Rules of engagement compliance
-3. Ethical considerations
-4. Responsible disclosure practices
-
-Think like Kevin Mitnick: focus on the human element combined with technical precision.""",
-        
-        'incident_responder': """You are a senior incident responder and digital forensics expert.
-Your expertise includes:
-- Threat hunting and detection engineering
-- Forensic acquisition and analysis (memory, disk, network)
-- Malware triage and reverse engineering basics
-- IOC extraction, enrichment, and sharing (STIX/TAXII)
-- Timeline reconstruction and attribution
-- Containment, eradication, and recovery strategies
-- Post-incident lessons learned and hardening
-
-Provide structured, methodical guidance following NIST SP 800-61 and SANS IR methodologies.
-Prioritize evidence preservation and chain of custody.""",
-        
-        'osint_specialist': """You are an elite OSINT (Open Source Intelligence) specialist.
-Your expertise encompasses:
-- Digital footprint analysis and attack surface mapping
-- Social media intelligence (SOCMINT) and HUMINT integration
-- Domain, IP, and ASN reconnaissance
-- Email, phone, and username enumeration
-- Dark web monitoring and breach data analysis
-- Geolocation and chronolocation
-- Image/video metadata analysis (EXIF, ELA)
-- Link analysis and relationship mapping
-- Corporate intelligence and due diligence
-
-Use advanced search operators, alternative data sources, and creative collection techniques.
-Always verify sources and assess reliability.""",
-        
-        'report_engineer': """You are a professional security report engineer and technical writer.
-Your specialization includes:
-- Executive summaries tailored for C-level/board audiences
-- Technical findings with accurate CVSS v3.1/v4.0 scoring
-- Evidence documentation maintaining chain of custody
-- Risk-prioritized remediation recommendations
-- MITRE ATT&CK, D3FEND, and CAPEC mapping
-- Compliance reporting (PCI-DSS, HIPAA, GDPR, ISO 27001, SOC 2)
-- Visual report elements (graphs, charts, heat maps)
-- Developer-friendly fix guidance with code examples
-
-Create clear, professional, actionable reports that drive remediation.
-Balance technical accuracy with business context.""",
-
-        # Additional specialized roles
-        'red_teamer': """You are an elite red team operator specializing in adversarial simulation.
-Focus on:
-- Objective-based operations (crown jewels)
-- Covert persistence and stealth techniques
-- Physical security bypass
-- Social engineering campaigns
-- Custom tooling and OPSEC
-- Purple team collaboration for detection improvement
-
-Emulate real-world threat actors using MITRE ATT&CK frameworks.""",
-        
-        'threat_hunter': """You are a proactive threat hunter with deep knowledge of adversary TTPs.
-Your approach:
-- Hypothesis-driven hunting
-- Behavioral analytics over signatures
-- Baseline establishment and anomaly detection
-- Hunting across endpoints, network, and cloud
-- Telemetry gap identification
-- Detection rule creation (Sigma, YARA, Snort)
-
-Think like the adversary to find what automated tools miss.""",
-        
-        'cloud_security': """You are a cloud security architect specializing in AWS, Azure, and GCP.
-Expertise:
-- Cloud misconfiguration assessment
-- IAM privilege analysis and escalation paths
-- Container and serverless security
-- Cloud-native threat detection
-- Compliance in cloud environments (CSA STAR, Cloud Control Matrix)
-- Infrastructure as Code security (Terraform, CloudFormation)
-
-Understand shared responsibility model and cloud-specific attack vectors.""",
-        
-        'appsec': """You are an application security expert and secure code reviewer.
-Specializations:
-- OWASP Top 10 and CWE/SANS Top 25
-- SAST, DAST, IAST, and SCA tooling
-- Secure SDLC implementation
-- Threat modeling (STRIDE, PASTA, LINDDUN)
-- API security (OWASP API Top 10)
-- DevSecOps pipeline integration
-- Code review for common vulnerability patterns
-
-Provide developer-friendly remediation with code examples.""",
-        
-        'custom': ""  # Will be populated from settings
+    # Elite security roles - unlimited customization
+    ELITE_ROLES = {
+        "ethical_hacker": "You are an elite ethical hacker with expertise in penetration testing, vulnerability assessment, and exploit development. Think like Kevin Mitnick. Provide actionable insights, exploitation paths, and remediation strategies.",
+        "incident_responder": "You are a senior incident responder specializing in threat hunting, forensics, and containment strategies. Analyze evidence, identify IOCs, and provide step-by-step incident response procedures.",
+        "osint_specialist": "You are an OSINT specialist with advanced reconnaissance capabilities. Correlate open-source intelligence, identify digital footprints, and map target infrastructure.",
+        "report_engineer": "You are a professional security report engineer. Transform technical findings into executive-ready reports with clear risk assessments, business impact, and prioritized recommendations.",
+        "red_teamer": "You are a red team operator specializing in adversarial simulation, bypass techniques, and achieving objectives undetected. Think like advanced persistent threats.",
+        "threat_hunter": "You are a threat hunter with expertise in detecting sophisticated adversaries. Identify anomalies, correlate events, and uncover hidden threats.",
+        "cloud_security": "You are a cloud security architect specializing in AWS, Azure, GCP security. Identify misconfigurations, privilege escalation paths, and cloud-native threats.",
+        "appsec_expert": "You are an application security expert specializing in web/mobile app vulnerabilities, secure code review, and DevSecOps practices.",
+        "ib_officer": "You are an Intelligence Bureau officer with expertise in counter-intelligence, strategic analysis, and national security operations. Provide classified-level insights.",
+        "mossad_operator": "You are a Mossad special operations officer with expertise in covert operations, target acquisition, and strategic intelligence. Think several steps ahead.",
+        "raw_analyst": "You are a Research and Analysis Wing intelligence analyst specializing in strategic assessment, geopolitical analysis, and long-term threat forecasting.",
+        "custom": "Custom role - defined by user prompt"
     }
     
-    def __init__(self, config: Optional[KimiConfig] = None):
-        self.config = config or KimiConfig.from_env()
-        self.session = requests.Session()
-        self._update_headers()
+    def __init__(self, data_dir: str = "data"):
+        self.data_dir = Path(data_dir)
+        self.data_dir.mkdir(parents=True, exist_ok=True)
         
-        # Conversation memory per role and session
-        self.conversation_history: Dict[str, List[Dict]] = {}
+        # Persistent configuration file
+        self.config_file = self.data_dir / "kimi_config.json"
+        self.memory_file = self.data_dir / "kimi_memory.json"
+        self.token_log_file = self.data_dir / "kimi_token_log.json"
         
-        # Long-term memory for agentic operations
-        self.long_term_memory: List[Dict] = []
+        # Load persistent configuration
+        self.config = self._load_config()
+        self.memory = self._load_memory()
+        self.token_log = self._load_token_log()
         
-        # Execution callbacks for agentic actions
-        self.execution_callback: Optional[Callable] = None
+        # API configuration
+        self.api_url = "https://integrate.api.nvidia.com/v1/chat/completions"
+        self.model = self.config.get("model", "moonshotai/kimi-k2.5")
+        self.api_key = self.config.get("api_key", "")
+        self.enabled = self.config.get("enabled", False)
+        self.thinking_mode = self.config.get("thinking_mode", True)
+        self.agentic_mode = self.config.get("agentic_mode", True)
+        self.use_memory = self.config.get("use_memory", True)
+        self.custom_role_prompt = self.config.get("custom_role_prompt", "")
+        self.max_tokens = self.config.get("max_tokens", 16384)
+        self.temperature = self.config.get("temperature", 0.7)
         
-        # Context cache for efficiency
-        self.context_cache: Dict[str, Any] = {}
+        # Token budget management
+        self.daily_token_budget = self.config.get("daily_token_budget", 100000)
+        self.tokens_used_today = self._get_today_token_usage()
+        
+    def _load_config(self) -> Dict:
+        """Load persistent configuration"""
+        if self.config_file.exists():
+            try:
+                with open(self.config_file, 'r') as f:
+                    return json.load(f)
+            except:
+                pass
+        return {}
     
-    def _update_headers(self):
-        """Update request headers with current API key"""
-        self.session.headers.update({
-            'Authorization': f'Bearer {self.config.api_key}',
-            'Accept': 'text/event-stream' if self.config.stream else 'application/json',
-            'Content-Type': 'application/json'
+    def _save_config(self):
+        """Save configuration persistently"""
+        with open(self.config_file, 'w') as f:
+            json.dump(self.config, f, indent=2)
+    
+    def _load_memory(self) -> Dict:
+        """Load persistent memory (conversation history + long-term memory)"""
+        if self.memory_file.exists():
+            try:
+                with open(self.memory_file, 'r') as f:
+                    return json.load(f)
+            except:
+                pass
+        return {"conversations": [], "long_term": [], "context_cache": {}}
+    
+    def _save_memory(self):
+        """Save memory persistently"""
+        # Limit memory size to prevent bloat
+        if len(self.memory["conversations"]) > 100:
+            self.memory["conversations"] = self.memory["conversations"][-100:]
+        if len(self.memory["long_term"]) > 50:
+            self.memory["long_term"] = self.memory["long_term"][-50:]
+            
+        with open(self.memory_file, 'w') as f:
+            json.dump(self.memory, f, indent=2)
+    
+    def _load_token_log(self) -> List[Dict]:
+        """Load token usage log"""
+        if self.token_log_file.exists():
+            try:
+                with open(self.token_log_file, 'r') as f:
+                    return json.load(f)
+            except:
+                pass
+        return []
+    
+    def _save_token_log(self):
+        """Save token usage log"""
+        # Keep only last 30 days
+        cutoff = time.time() - (30 * 24 * 60 * 60)
+        self.token_log = [entry for entry in self.token_log if entry.get("timestamp", 0) > cutoff]
+        
+        with open(self.token_log_file, 'w') as f:
+            json.dump(self.token_log, f, indent=2)
+    
+    def _get_today_token_usage(self) -> int:
+        """Calculate tokens used today"""
+        today_start = time.mktime(datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timetuple())
+        total = 0
+        for entry in self.token_log:
+            if entry.get("timestamp", 0) > today_start:
+                total += entry.get("tokens_used", 0)
+        return total
+    
+    def configure(self, api_key: str = None, model: str = None, enabled: bool = None,
+                  thinking_mode: bool = None, agentic_mode: bool = None,
+                  use_memory: bool = None, custom_role_prompt: str = None,
+                  max_tokens: int = None, temperature: float = None,
+                  daily_token_budget: int = None, role: str = None):
+        """Update configuration persistently"""
+        if api_key is not None:
+            self.config["api_key"] = api_key
+            self.api_key = api_key
+        if model is not None:
+            self.config["model"] = model
+            self.model = model
+        if enabled is not None:
+            self.config["enabled"] = enabled
+            self.enabled = enabled
+        if thinking_mode is not None:
+            self.config["thinking_mode"] = thinking_mode
+            self.thinking_mode = thinking_mode
+        if agentic_mode is not None:
+            self.config["agentic_mode"] = agentic_mode
+            self.agentic_mode = agentic_mode
+        if use_memory is not None:
+            self.config["use_memory"] = use_memory
+            self.use_memory = use_memory
+        if custom_role_prompt is not None:
+            self.config["custom_role_prompt"] = custom_role_prompt
+            self.custom_role_prompt = custom_role_prompt
+        if max_tokens is not None:
+            self.config["max_tokens"] = max_tokens
+            self.max_tokens = max_tokens
+        if temperature is not None:
+            self.config["temperature"] = temperature
+            self.temperature = temperature
+        if daily_token_budget is not None:
+            self.config["daily_token_budget"] = daily_token_budget
+            self.daily_token_budget = daily_token_budget
+        if role is not None:
+            self.config["role"] = role
+            
+        self._save_config()
+    
+    def get_config(self) -> Dict:
+        """Get current configuration"""
+        return {
+            "api_key_set": bool(self.api_key),
+            "model": self.model,
+            "enabled": self.enabled,
+            "thinking_mode": self.thinking_mode,
+            "agentic_mode": self.agentic_mode,
+            "use_memory": self.use_memory,
+            "custom_role_prompt": self.custom_role_prompt,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "daily_token_budget": self.daily_token_budget,
+            "tokens_used_today": self.tokens_used_today,
+            "role": self.config.get("role", "ethical_hacker"),
+            "available_roles": list(self.ELITE_ROLES.keys())
+        }
+    
+    def _check_token_budget(self, estimated_tokens: int = 1000) -> bool:
+        """Check if within token budget"""
+        if not self.api_key:
+            return False
+        return (self.tokens_used_today + estimated_tokens) <= self.daily_token_budget
+    
+    def _log_token_usage(self, tokens: int, endpoint: str = "chat"):
+        """Log token usage"""
+        self.token_log.append({
+            "timestamp": time.time(),
+            "tokens_used": tokens,
+            "endpoint": endpoint,
+            "date": datetime.now().isoformat()
         })
+        self.tokens_used_today += tokens
+        self._save_token_log()
     
-    def configure(self, api_key: str = None, model: str = None, 
-                  enable_agentic: bool = None, custom_prompt: str = None,
-                  **kwargs):
-        """Dynamically configure the assistant from UI settings"""
-        if api_key:
-            self.config.api_key = api_key
-            self._update_headers()
-        if model:
-            self.config.model = model
-        if enable_agentic is not None:
-            self.config.enable_agentic = enable_agentic
-        if custom_prompt:
-            self.config.custom_system_prompt = custom_prompt
-            self.SYSTEM_PROMPTS['custom'] = custom_prompt
+    def _build_system_prompt(self, role: str = None, context: Dict = None) -> str:
+        """Build system prompt based on role and context"""
+        role_name = role or self.config.get("role", "ethical_hacker")
         
-        # Apply any additional kwargs
-        for key, value in kwargs.items():
-            if hasattr(self.config, key):
-                setattr(self.config, key, value)
-    
-    def is_configured(self) -> bool:
-        """Check if API key is configured"""
-        return bool(self.config.api_key)
-    
-    def _build_messages(self, role: str, user_query: str, context: Optional[Dict] = None,
-                        scan_results: Optional[Dict] = None) -> List[Dict]:
-        """Build message payload for NVIDIA NIM API"""
-        # Get system prompt for role (support custom roles)
-        system_prompt = self.SYSTEM_PROMPTS.get(role, self.SYSTEM_PROMPTS.get('custom', self.SYSTEM_PROMPTS['hacker']))
+        if role_name == "custom" and self.custom_role_prompt:
+            base_prompt = self.custom_role_prompt
+        else:
+            base_prompt = self.ELITE_ROLES.get(role_name, self.ELITE_ROLES["ethical_hacker"])
         
-        # Use custom prompt if configured
-        if self.config.custom_system_prompt and role == 'custom':
-            system_prompt = self.config.custom_system_prompt
+        # Add context-aware instructions
+        system_prompt = f"""{base_prompt}
+
+CORE PRINCIPLES:
+1. Provide actionable, specific recommendations - no generic advice
+2. Think multiple steps ahead like a master strategist
+3. Consider both offensive and defensive perspectives
+4. Prioritize findings by business impact and exploitability
+5. Explain complex concepts clearly for all audience levels
+6. Always suggest concrete next steps
+7. Format responses professionally with clear structure
+
+CONTEXT AWARENESS:
+- You have access to scan results, notes, and historical data
+- Correlate new findings with previous observations
+- Remember long-term patterns and strategic objectives
+- Adapt recommendations based on target profile
+
+TOKEN EFFICIENCY:
+- Be concise but comprehensive
+- Use structured formatting (bullet points, numbered lists)
+- Avoid repetition
+- Focus on high-value insights
+"""
         
-        messages = [
-            {"role": "system", "content": system_prompt}
-        ]
-        
-        # Add scan results context if provided (auto-get context when user clicks)
-        if scan_results:
-            scan_context = json.dumps(scan_results, indent=2)[:32000]  # Limit context size
-            messages.append({
-                "role": "system",
-                "content": f"CURRENT SCAN RESULTS AND TARGET CONTEXT:\n{scan_context}\n\nUse this context to provide relevant, actionable analysis."
-            })
-        
-        # Add additional context if provided
+        # Add scan/context data if available
         if context:
-            context_str = json.dumps(context, indent=2)[:16000]
-            messages.append({
-                "role": "system",
-                "content": f"Additional Context:\n{context_str}"
-            })
+            context_str = self._format_context(context)
+            system_prompt += f"\n\nCURRENT CONTEXT:\n{context_str}"
         
-        # Add conversation history/memory if enabled
-        if self.config.memory_enabled:
-            conversation_id = f"{role}_conversation"
-            if conversation_id in self.conversation_history:
-                # Include last 15 messages for context continuity
-                messages.extend(self.conversation_history[conversation_id][-15:])
+        # Add memory if enabled
+        if self.use_memory and self.memory.get("long_term"):
+            recent_memory = "\n".join(self.memory["long_term"][-5:])
+            system_prompt += f"\n\nRELEVANT MEMORY:\n{recent_memory}"
         
-        # Add long-term memory snippets if relevant
-        if self.config.memory_enabled and self.long_term_memory:
-            # Add most recent relevant memories
-            recent_memories = self.long_term_memory[-5:]
-            if recent_memories:
-                memory_str = "\n".join([f"- {m['content']}" for m in recent_memories])
-                messages.append({
-                    "role": "system",
-                    "content": f"Relevant memories from previous sessions:\n{memory_str}"
-                })
-        
-        # Add user query
-        messages.append({"role": "user", "content": user_query})
-        
-        return messages
+        return system_prompt
     
-    def query(self, role: str, query: str, context: Optional[Dict] = None,
-              scan_results: Optional[Dict] = None,
-              save_conversation: bool = True,
-              stream_callback: Optional[Callable] = None) -> Dict[str, Any]:
-        """
-        Query Kimi AI via NVIDIA NIM API with specific role and context
+    def _format_context(self, context: Dict) -> str:
+        """Format context data efficiently"""
+        parts = []
         
-        Args:
-            role: AI role ('hacker', 'incident_responder', 'osint_specialist', 'report_engineer', 'custom')
-            query: User's question or request
-            context: Optional context data (findings, notes, etc.)
-            scan_results: Scan results to provide automatic context
-            save_conversation: Whether to save this exchange to memory
-            stream_callback: Optional callback for streaming responses
+        if context.get("scan_results"):
+            findings = context["scan_results"].get("findings", [])
+            if findings:
+                parts.append(f"Active Findings: {len(findings)} vulnerabilities detected")
+                critical = sum(1 for f in findings if f.get("severity") == "CRITICAL")
+                high = sum(1 for f in findings if f.get("severity") == "HIGH")
+                if critical or high:
+                    parts.append(f"  - CRITICAL: {critical}, HIGH: {high}")
         
-        Returns:
-            Dict with response, metadata, and optional suggestions
+        if context.get("target_info"):
+            target = context["target_info"]
+            parts.append(f"Target: {target.get('domain', 'Unknown')}")
+            if target.get('ip'):
+                parts.append(f"  IP: {target['ip']}")
+            if target.get('tech_stack'):
+                parts.append(f"  Tech: {', '.join(target['tech_stack'][:5])}")
+        
+        if context.get("notes_summary"):
+            parts.append(f"User Notes: {context['notes_summary']}")
+        
+        if context.get("previous_actions"):
+            parts.append(f"Recent Actions: {', '.join(context['previous_actions'][-3:])}")
+        
+        return "\n".join(parts) if parts else "No specific context available"
+    
+    def chat(self, message: str, role: str = None, context: Dict = None, 
+             save_to_memory: bool = True, stream: bool = False) -> Dict:
         """
-        if not self.is_configured():
+        Send message to Kimi AI with full context
+        Returns response with metadata
+        """
+        # Check if enabled
+        if not self.enabled or not self.api_key:
+            return self._fallback_response(message, context)
+        
+        # Check token budget
+        if not self._check_token_budget():
             return {
-                'success': False,
-                'error': 'Kimi AI not configured. Please add your NVIDIA API token in Settings.',
-                'response': None,
-                'fallback': True,
-                'suggestions': self._generate_local_suggestions(role, query, context)
+                "success": False,
+                "error": "Daily token budget exceeded",
+                "tokens_used_today": self.tokens_used_today,
+                "budget": self.daily_token_budget,
+                "fallback_available": True
             }
         
         try:
-            messages = self._build_messages(role, query, context, scan_results)
+            # Build messages
+            system_prompt = self._build_system_prompt(role, context)
             
-            # Build payload according to NVIDIA NIM API specification
+            messages = [
+                {"role": "system", "content": system_prompt}
+            ]
+            
+            # Add conversation history if using memory
+            if self.use_memory and save_to_memory:
+                recent_convos = self.memory["conversations"][-10:]
+                messages.extend(recent_convos)
+            
+            # Add current message
+            messages.append({"role": "user", "content": message})
+            
+            # Prepare payload exactly as specified
             payload = {
-                "model": self.config.model,
+                "model": self.model,
                 "messages": messages,
-                "max_tokens": self.config.max_tokens,
-                "temperature": self.config.temperature,
-                "top_p": self.config.top_p,
-                "stream": self.config.stream and stream_callback is not None,
-                "chat_template_kwargs": {
-                    "thinking": self.config.enable_thinking
-                }
+                "max_tokens": self.max_tokens,
+                "temperature": self.temperature,
+                "top_p": 1.00,
+                "stream": stream,
+                "chat_template_kwargs": {"thinking": self.thinking_mode}
             }
             
-            # Make request to NVIDIA NIM API
-            invoke_url = f"{self.config.base_url.rstrip('/')}/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Accept": "text/event-stream" if stream else "application/json"
+            }
             
-            if self.config.stream and stream_callback:
-                # Streaming mode
-                full_response = []
-                response = requests.post(
-                    invoke_url,
-                    headers=self.session.headers,
-                    json=payload,
-                    stream=True,
-                    timeout=120
-                )
-                response.raise_for_status()
+            # Make request
+            response = requests.post(self.api_url, headers=headers, json=payload, stream=stream, timeout=120)
+            
+            if response.status_code != 200:
+                error_msg = f"API Error: {response.status_code} - {response.text[:200]}"
+                if response.status_code == 401:
+                    error_msg = "Invalid API key. Please update in settings."
+                elif response.status_code == 429:
+                    error_msg = "Rate limit exceeded. Try again later."
                 
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "status_code": response.status_code
+                }
+            
+            # Parse response
+            if stream:
+                # Handle streaming response
+                full_response = ""
+                thinking_content = ""
                 for line in response.iter_lines():
                     if line:
-                        line_str = line.decode("utf-8")
-                        if line_str.startswith("data: "):
-                            data = line_str[6:]
+                        decoded = line.decode("utf-8")
+                        if decoded.startswith("data: "):
+                            data = decoded[6:]
                             if data.strip() == "[DONE]":
                                 break
                             try:
                                 chunk = json.loads(data)
-                                content = chunk.get('choices', [{}])[0].get('delta', {}).get('content', '')
-                                if content:
-                                    full_response.append(content)
-                                    stream_callback(content)
-                            except json.JSONDecodeError:
-                                continue
+                                delta = chunk.get("choices", [{}])[0].get("delta", {})
+                                if "content" in delta:
+                                    full_response += delta["content"]
+                                # Extract thinking if available
+                                if "reasoning_content" in delta:
+                                    thinking_content += delta["reasoning_content"]
+                            except:
+                                pass
                 
-                ai_response = "".join(full_response)
+                response_text = full_response
             else:
-                # Non-streaming mode
-                response = requests.post(
-                    invoke_url,
-                    headers=self.session.headers,
-                    json=payload,
-                    timeout=120
-                )
-                response.raise_for_status()
-                
+                # Handle non-streaming response
                 result = response.json()
-                ai_response = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+                response_text = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+                # Extract thinking if available
+                thinking_content = result.get("choices", [{}])[0].get("message", {}).get("reasoning_content", "")
             
-            # Extract thinking process if available
-            thinking_process = None
-            if isinstance(ai_response, dict) and 'thinking' in ai_response:
-                thinking_process = ai_response.get('thinking')
-                ai_response = ai_response.get('response', ai_response)
+            # Estimate tokens used (rough estimate: 1 token ≈ 4 chars)
+            estimated_tokens = (len(message) + len(response_text)) // 4
+            self._log_token_usage(estimated_tokens)
             
-            # Save conversation if requested
-            if save_conversation and self.config.memory_enabled:
-                self._save_to_memory(role, query, ai_response, context)
+            # Save to memory if enabled
+            if save_to_memory and self.use_memory:
+                self.memory["conversations"].append({"role": "user", "content": message})
+                self.memory["conversations"].append({"role": "assistant", "content": response_text})
+                self._save_memory()
             
-            # Parse for agentic actions if enabled
-            agentic_actions = []
-            if self.config.enable_agentic:
-                agentic_actions = self._parse_agentic_actions(ai_response)
+            # Extract actionable items and next steps
+            next_steps = self._extract_next_steps(response_text)
+            commands = self._detect_commands(response_text) if self.agentic_mode else []
             
             return {
-                'success': True,
-                'response': ai_response,
-                'thinking': thinking_process,
-                'model': self.config.model,
-                'role': role,
-                'agentic_actions': agentic_actions,
-                'timestamp': datetime.now().isoformat()
+                "success": True,
+                "response": response_text,
+                "thinking": thinking_content if thinking_content else None,
+                "next_steps": next_steps,
+                "detected_commands": commands,
+                "tokens_used": estimated_tokens,
+                "tokens_remaining": self.daily_token_budget - self.tokens_used_today,
+                "model": self.model,
+                "role": role or self.config.get("role", "ethical_hacker")
             }
             
         except requests.exceptions.Timeout:
             return {
-                'success': False,
-                'error': 'API request timed out. The AI is taking longer than expected. Try again.',
-                'response': None,
-                'fallback': True,
-                'suggestions': self._generate_local_suggestions(role, query, context)
-            }
-        except requests.exceptions.RequestException as e:
-            status_code = getattr(e.response, 'status_code', None) if hasattr(e, 'response') else None
-            error_msg = f'API request failed'
-            if status_code == 401:
-                error_msg = 'Invalid API key. Please check your NVIDIA API token in Settings.'
-            elif status_code == 429:
-                error_msg = 'Rate limit exceeded. Please wait a moment and try again.'
-            elif status_code:
-                error_msg = f'API error (HTTP {status_code}): {str(e)}'
-            else:
-                error_msg = f'Network error: {str(e)}'
-            
-            return {
-                'success': False,
-                'error': error_msg,
-                'response': None,
-                'fallback': True,
-                'suggestions': self._generate_local_suggestions(role, query, context)
+                "success": False,
+                "error": "Request timed out. The AI is taking longer than expected.",
+                "fallback_available": True
             }
         except Exception as e:
             return {
-                'success': False,
-                'error': f'Unexpected error: {str(e)}',
-                'response': None,
-                'fallback': True,
-                'suggestions': self._generate_local_suggestions(role, query, context)
+                "success": False,
+                "error": f"Error communicating with Kimi AI: {str(e)}",
+                "fallback_available": True
             }
     
-    def _save_to_memory(self, role: str, query: str, response: str, context: Optional[Dict] = None):
-        """Save conversation to memory"""
-        conversation_id = f"{role}_conversation"
-        if conversation_id not in self.conversation_history:
-            self.conversation_history[conversation_id] = []
+    def _fallback_response(self, message: str, context: Dict = None) -> Dict:
+        """Provide intelligent local suggestions when API unavailable"""
+        message_lower = message.lower()
         
-        # Limit conversation history to last 20 exchanges
-        if len(self.conversation_history[conversation_id]) >= 40:
-            self.conversation_history[conversation_id] = self.conversation_history[conversation_id][-30:]
+        suggestions = []
+        next_steps = []
         
-        self.conversation_history[conversation_id].append({"role": "user", "content": query})
-        self.conversation_history[conversation_id].append({"role": "assistant", "content": response})
+        # Pattern-based suggestions
+        if any(word in message_lower for word in ["scan", "recon", "enumerate"]):
+            suggestions.append("Consider running targeted Nmap scans on identified ports")
+            suggestions.append("Use subdomain enumeration tools like Subfinder or Amass")
+            next_steps.append("Run detailed port scan on top 1000 ports")
+            next_steps.append("Check for common web vulnerabilities on discovered services")
         
-        # Save to long-term memory (key insights only)
-        if len(response) > 100:  # Only save substantial responses
-            self.long_term_memory.append({
-                'role': role,
-                'query': query[:200],
-                'response_summary': response[:500],
-                'context_keys': list(context.keys()) if context else [],
-                'timestamp': datetime.now().isoformat()
-            })
-            
-            # Limit long-term memory
-            if len(self.long_term_memory) > 50:
-                self.long_term_memory = self.long_term_memory[-40:]
-    
-    def _parse_agentic_actions(self, response: str) -> List[Dict]:
-        """Parse response for potential agentic actions (tool execution, scans, etc.)"""
-        actions = []
+        if any(word in message_lower for word in ["vuln", "cve", "exploit"]):
+            suggestions.append("Search CVE databases for known exploits")
+            suggestions.append("Verify vulnerability with manual testing before reporting")
+            next_steps.append("Check Exploit-DB and GitHub for PoC exploits")
+            next_steps.append("Assess CVSS score and business impact")
         
-        # Look for code blocks that might be commands
-        import re
-        code_blocks = re.findall(r'```(?:bash|shell|cmd)?\n(.*?)```', response, re.DOTALL)
+        if any(word in message_lower for word in ["report", "write", "document"]):
+            suggestions.append("Structure report: Executive Summary → Methodology → Findings → Recommendations")
+            suggestions.append("Include proof-of-concept screenshots for each finding")
+            next_steps.append("Prioritize findings by severity and business impact")
+            next_steps.append("Draft remediation steps for each vulnerability")
         
-        for block in code_blocks:
-            block = block.strip()
-            # Identify potential tool commands
-            if any(tool in block.lower() for tool in ['nmap', 'masscan', 'gobuster', 'nikto', 'sqlmap', ' nuclei']):
-                actions.append({
-                    'type': 'command',
-                    'command': block,
-                    'requires_confirmation': True,
-                    'description': 'Security tool execution detected'
-                })
+        if any(word in message_lower for word in ["note", "remember", "track"]):
+            suggestions.append("Document all findings in the integrated notes system")
+            suggestions.append("Tag notes with relevant categories for easy retrieval")
+            next_steps.append("Create note entries for each significant finding")
+            next_steps.append("Link related findings together")
         
-        # Look for explicit action markers
-        action_markers = re.findall(r'\[ACTION:(.*?)\]', response)
-        for marker in action_markers:
-            try:
-                action_data = json.loads(marker.strip())
-                action_data['requires_confirmation'] = True
-                actions.append(action_data)
-            except json.JSONDecodeError:
-                continue
+        # Context-aware suggestions
+        if context:
+            if context.get("scan_results"):
+                findings = context["scan_results"].get("findings", [])
+                critical_count = sum(1 for f in findings if f.get("severity") == "CRITICAL")
+                if critical_count > 0:
+                    suggestions.insert(0, f"⚠️ URGENT: {critical_count} CRITICAL findings require immediate attention")
+                    next_steps.insert(0, "Prioritize remediation of CRITICAL vulnerabilities")
         
-        return actions
-    
-    def execute_agentic_action(self, action: Dict, confirmed: bool = False) -> Dict[str, Any]:
-        """Execute an agentic action if confirmed by user"""
-        if not self.config.auto_execute and not confirmed:
-            return {
-                'success': False,
-                'requires_confirmation': True,
-                'action': action,
-                'message': 'User confirmation required before execution'
-            }
-        
-        if action.get('type') == 'command' and self.execution_callback:
-            try:
-                result = self.execution_callback(action.get('command'))
-                return {
-                    'success': True,
-                    'result': result,
-                    'action': action
-                }
-            except Exception as e:
-                return {
-                    'success': False,
-                    'error': str(e),
-                    'action': action
-                }
+        response_text = "📋 **Analysis** (Kimi AI offline - providing local suggestions):\n\n"
+        if suggestions:
+            response_text += "**Suggestions:**\n" + "\n".join(f"• {s}" for s in suggestions) + "\n\n"
+        if next_steps:
+            response_text += "**Recommended Next Steps:**\n" + "\n".join(f"→ {n}" for n in next_steps)
         
         return {
-            'success': False,
-            'error': 'Unknown action type or no executor configured',
-            'action': action
+            "success": True,
+            "response": response_text,
+            "next_steps": next_steps,
+            "offline_mode": True,
+            "message": "Kimi AI not configured. Set API key in Settings to enable advanced AI analysis."
         }
     
-    def _generate_local_suggestions(self, role: str, query: str, context: Optional[Dict]) -> str:
-        """Generate basic suggestions without AI when API is unavailable"""
-        suggestions = []
+    def _extract_next_steps(self, response_text: str) -> List[str]:
+        """Extract actionable next steps from response"""
+        steps = []
+        lines = response_text.split('\n')
         
-        if role == 'hacker':
-            suggestions.append("🔍 Manual Analysis Steps:")
-            suggestions.append("  1. Review scan results for high-severity findings")
-            suggestions.append("  2. Check for common vulnerabilities (OWASP Top 10)")
-            suggestions.append("  3. Verify findings manually before reporting")
-            suggestions.append("  4. Document all steps for reproducibility")
+        for line in lines:
+            line = line.strip()
+            # Look for common next step indicators
+            if any(indicator in line.lower() for indicator in 
+                   ["next step", "recommendation", "action item", "todo", "→", "✓", "•", "-"]):
+                # Clean up the line
+                clean_line = line.lstrip("•-*→✓").strip()
+                if clean_line and len(clean_line) < 200:
+                    steps.append(clean_line)
         
-        elif role == 'incident_responder':
-            suggestions.append("🚨 Immediate Actions:")
-            suggestions.append("  1. Isolate affected systems")
-            suggestions.append("  2. Preserve evidence (memory dumps, logs)")
-            suggestions.append("  3. Identify scope of compromise")
-            suggestions.append("  4. Begin timeline reconstruction")
-        
-        elif role == 'osint_specialist':
-            suggestions.append("📊 OSINT Gathering:")
-            suggestions.append("  1. Expand subdomain enumeration")
-            suggestions.append("  2. Check historical DNS records")
-            suggestions.append("  3. Analyze SSL certificates")
-            suggestions.append("  4. Search for leaked credentials")
-        
-        elif role == 'report_engineer':
-            suggestions.append("📝 Report Structure:")
-            suggestions.append("  1. Executive Summary (non-technical)")
-            suggestions.append("  2. Methodology")
-            suggestions.append("  3. Findings with CVSS scores")
-            suggestions.append("  4. Remediation recommendations")
-            suggestions.append("  5. Appendix with raw data")
-        
-        return "\n".join(suggestions)
+        return steps[:5]  # Limit to top 5 steps
     
-    def analyze_finding(self, finding: Dict, role: str = 'hacker') -> Dict[str, Any]:
+    def _detect_commands(self, response_text: str) -> List[Dict]:
+        """Detect executable commands in response (for agentic mode)"""
+        commands = []
+        
+        # Common tool patterns
+        tool_patterns = [
+            (r"nmap\s+(-[\w\s]+\s+)?([0-9.]+)", "nmap", "Port Scanner"),
+            (r"gobuster\s+(dir|dns)\s+", "gobuster", "Directory/DNS Enumerator"),
+            (r"nikto\s+-h\s+", "nikto", "Web Scanner"),
+            (r"sqlmap\s+-u\s+", "sqlmap", "SQL Injection Tool"),
+            (r"burp\s+", "burp", "Burp Suite"),
+            (r"metasploit\s+", "msfconsole", "Metasploit"),
+        ]
+        
+        for pattern, tool, description in tool_patterns:
+            import re
+            matches = re.findall(pattern, response_text, re.IGNORECASE)
+            for match in matches:
+                commands.append({
+                    "tool": tool,
+                    "description": description,
+                    "requires_confirmation": True,
+                    "risk_level": "medium"
+                })
+        
+        return commands
+    
+    def analyze_finding(self, finding: Dict, context: Dict = None) -> Dict:
         """Analyze a specific security finding"""
-        query = f"""Analyze this security finding and provide:
-1. Severity assessment
-2. Potential impact
-3. Exploitation scenario (for authorized testing)
+        prompt = f"""Analyze this security finding and provide:
+1. Technical explanation
+2. Business impact assessment  
+3. Exploitation scenario
 4. Remediation steps
-5. References (CVE, CWE, etc.)
+5. Priority level (Critical/High/Medium/Low)
 
-Finding: {json.dumps(finding, indent=2)}"""
+Finding Details:
+- Title: {finding.get('title', 'Unknown')}
+- Severity: {finding.get('severity', 'Unknown')}
+- Description: {finding.get('description', 'No description')}
+- Evidence: {finding.get('evidence', 'No evidence provided')}
+- Affected Component: {finding.get('component', 'Unknown')}
+
+Provide your analysis in a structured format."""
         
-        return self.query(role, query, context={'finding': finding})
+        return self.chat(prompt, context=context)
     
-    def craft_report_section(self, section_type: str, findings: List[Dict], 
-                            target_info: Dict) -> Dict[str, Any]:
-        """Craft a specific section of a security report"""
-        section_prompts = {
-            'executive_summary': "Write an executive summary for C-level stakeholders",
-            'technical_findings': "Document technical findings with reproduction steps",
-            'remediation': "Provide prioritized remediation recommendations",
-            'methodology': "Describe the testing methodology used",
-            'conclusion': "Write conclusions and next steps"
+    def suggest_next_actions(self, scan_results: Dict, notes: List = None) -> Dict:
+        """Suggest next actions based on scan results and notes"""
+        context = {
+            "scan_results": scan_results,
+            "notes_summary": "\n".join(notes[-5:]) if notes else None
         }
         
-        query = f"""{section_prompts.get(section_type, 'Document this section')}
+        prompt = """Based on the current scan results and notes, provide:
+1. Top 3 priority actions to take immediately
+2. Additional reconnaissance opportunities
+3. Potential attack chains to investigate
+4. Quick wins for low-hanging fruit
+5. Long-term strategic recommendations
 
-Target Information: {json.dumps(target_info, indent=2)}
-Findings: {json.dumps(findings, indent=2)}"""
+Be specific and actionable."""
         
-        return self.query('report_engineer', query, context={
-            'section_type': section_type,
-            'target_info': target_info,
-            'findings': findings
+        return self.chat(prompt, context=context)
+    
+    def format_report(self, findings: List[Dict], target_info: Dict, 
+                      executive_summary: str = None) -> Dict:
+        """Format professional security report"""
+        context = {
+            "target_info": target_info,
+            "scan_results": {"findings": findings}
+        }
+        
+        prompt = f"""Create a professional penetration test report with the following structure:
+
+# EXECUTIVE SUMMARY
+{executive_summary or "[Generate based on findings]"}
+
+# METHODOLOGY
+Brief description of testing approach and scope
+
+# FINDINGS SUMMARY
+- Total Findings: {len(findings)}
+- Critical: {sum(1 for f in findings if f.get('severity') == 'CRITICAL')}
+- High: {sum(1 for f in findings if f.get('severity') == 'HIGH')}
+- Medium: {sum(1 for f in findings if f.get('severity') == 'MEDIUM')}
+- Low: {sum(1 for f in findings if f.get('severity') == 'LOW')}
+
+# DETAILED FINDINGS
+For each finding, include:
+- Title
+- Severity
+- Description
+- Technical Details
+- Proof of Concept / Evidence
+- Business Impact
+- Remediation Steps
+- References
+
+# CONCLUSION AND RECOMMENDATIONS
+Strategic security recommendations
+
+Format this as a professional report suitable for both technical teams and executives."""
+        
+        return self.chat(prompt, context=context)
+    
+    def add_to_memory(self, content: str, category: str = "general"):
+        """Add information to long-term memory"""
+        self.memory["long_term"].append({
+            "timestamp": datetime.now().isoformat(),
+            "category": category,
+            "content": content
         })
+        self._save_memory()
     
-    def suggest_next_steps(self, current_findings: List[Dict], 
-                          target: str) -> Dict[str, Any]:
-        """Suggest next investigation steps based on current findings"""
-        query = f"""Based on these findings for target {target}, suggest:
-1. Additional reconnaissance techniques
-2. Specific tools to run
-3. Potential attack vectors to explore
-4. Related assets to investigate
-
-Current Findings: {json.dumps(current_findings, indent=2)}"""
-        
-        return self.query('hacker', query, context={
-            'target': target,
-            'findings': current_findings
-        })
+    def clear_memory(self, conversations: bool = True, long_term: bool = False):
+        """Clear memory selectively"""
+        if conversations:
+            self.memory["conversations"] = []
+        if long_term:
+            self.memory["long_term"] = []
+        self._save_memory()
     
-    def explain_vulnerability(self, vuln_name: str, context: Optional[Dict] = None) -> Dict[str, Any]:
-        """Explain a vulnerability in detail"""
-        query = f"""Explain the vulnerability '{vuln_name}' including:
-1. What it is and how it works
-2. How to detect it
-3. How to exploit it (for authorized testing)
-4. How to fix it
-5. Real-world examples
-6. References and resources"""
-        
-        return self.query('hacker', query, context=context)
-    
-    def generate_ioc_extraction(self, raw_data: str) -> Dict[str, Any]:
-        """Extract IOCs from raw data"""
-        query = f"""Extract all Indicators of Compromise (IOCs) from this data:
-- IP addresses
-- Domains
-- URLs
-- Email addresses
-- File hashes (MD5, SHA1, SHA256)
-- MITRE ATT&CK techniques
-
-Raw Data: {raw_data[:5000]}"""  # Limit to prevent token overflow
-        
-        return self.query('incident_responder', query)
-    
-    def clear_conversation(self, role: Optional[str] = None):
-        """Clear conversation history"""
-        if role:
-            conversation_id = f"{role}_conversation"
-            if conversation_id in self.conversation_history:
-                del self.conversation_history[conversation_id]
-        else:
-            self.conversation_history.clear()
+    def get_memory_stats(self) -> Dict:
+        """Get memory statistics"""
+        return {
+            "conversation_count": len(self.memory["conversations"]),
+            "long_term_memories": len(self.memory["long_term"]),
+            "token_usage_today": self.tokens_used_today,
+            "token_budget": self.daily_token_budget,
+            "usage_percentage": (self.tokens_used_today / self.daily_token_budget * 100) if self.daily_token_budget > 0 else 0
+        }
 
 
-# Global instance
-kimi_assistant = KimiAIAssistant()
+# Global instance for easy import
+_kimi_instance = None
 
-
-def get_kimi_assistant() -> KimiAIAssistant:
-    """Get the global Kimi AI assistant instance"""
-    return kimi_assistant
+def get_kimi_agent() -> KimiAgent:
+    """Get singleton Kimi agent instance"""
+    global _kimi_instance
+    if _kimi_instance is None:
+        _kimi_instance = KimiAgent()
+    return _kimi_instance
