@@ -48,7 +48,10 @@ from integrations.advanced_tools import registry as tool_registry
 from reports.report_generator import generator as report_generator
 
 # Import advanced features
-from ai.kimi_integration import kimi_assistant, get_kimi_assistant
+from ai.kimi_integration import get_kimi_agent
+
+# Initialize Kimi agent
+kimi_agent = get_kimi_agent()
 from correlation.engine import correlation_engine, get_correlation_engine
 from integrations.attack_framework import attck_mapper, get_attck_mapper
 from playbooks.engine import playbook_engine, get_playbook_engine
@@ -903,7 +906,7 @@ def kimi_query():
     except:
         context = {}
     
-    result = kimi_assistant.query(role, query, context)
+    result = kimi_agent.chat(query, role=role, context=context)
     return jsonify(result)
 
 @app.route('/api/kimi/analyze-finding', methods=['POST'])
@@ -918,7 +921,7 @@ def kimi_analyze_finding():
     except:
         return jsonify({'error': 'Invalid finding JSON'}), 400
     
-    result = kimi_assistant.analyze_finding(finding, role)
+    result = kimi_agent.analyze_finding(finding, context={'role': role})
     return jsonify(result)
 
 @app.route('/api/kimi/suggest-next-steps', methods=['POST'])
@@ -933,7 +936,7 @@ def kimi_suggest_next_steps():
     except:
         return jsonify({'error': 'Invalid findings JSON'}), 400
     
-    result = kimi_assistant.suggest_next_steps(findings, target)
+    result = kimi_agent.suggest_next_actions({'findings': findings}, notes=None)
     return jsonify(result)
 
 @app.route('/api/correlation/add-finding', methods=['POST'])
@@ -1089,26 +1092,26 @@ def set_kimi_config():
     os.environ['KIMI_ENABLE_AGENTIC'] = str(enable_agentic)
 
     # Reconfigure assistant
-    kimi_assistant.configure(
+    kimi_agent.configure(
         api_key=api_key,
         model=model,
-        enable_agentic=enable_agentic,
-        custom_prompt=custom_prompt,
-        enable_thinking=enable_thinking,
-        memory_enabled=memory_enabled,
+        enabled=True,
+        agentic_mode=enable_agentic,
+        custom_role_prompt=custom_prompt,
+        thinking_mode=enable_thinking,
+        use_memory=memory_enabled,
         temperature=temperature,
         max_tokens=max_tokens
     )
     
-    if base_url != kimi_assistant.config.base_url:
-        kimi_assistant.config.base_url = base_url
-        kimi_assistant._update_headers()
+    if base_url != kimi_agent.api_url:
+        kimi_agent.api_url = base_url
 
     log_audit(session['user_id'], 'SET_KIMI_CONFIG', f'Updated Kimi AI config (model: {model})', request.remote_addr)
 
     return jsonify({
         'success': True,
-        'configured': kimi_assistant.is_configured(),
+        'configured': kimi_agent.enabled and bool(kimi_agent.api_key),
         'model': model,
         'enable_thinking': enable_thinking,
         'enable_agentic': enable_agentic,
@@ -1120,9 +1123,9 @@ def set_kimi_config():
 def get_kimi_config():
     """Get current Kimi AI configuration status"""
     return jsonify({
-        'configured': kimi_assistant.is_configured(),
-        'model': kimi_assistant.config.model,
-        'base_url': kimi_assistant.config.base_url
+        'configured': kimi_agent.enabled and bool(kimi_agent.api_key),
+        'model': kimi_agent.model,
+        'base_url': kimi_agent.api_url
     })
 
 @app.route('/notes')
@@ -1218,7 +1221,7 @@ def ai_analyze_note(note_id):
     content = row[0]
     role = request.form.get('role', 'hacker')
     
-    result = kimi_assistant.query(role, f"Analyze these security notes and provide insights:\n\n{content}")
+    result = kimi_agent.chat(f"Analyze these security notes and provide insights:\n\n{content}", role=role)
     return jsonify(result)
 
 if __name__ == '__main__':
