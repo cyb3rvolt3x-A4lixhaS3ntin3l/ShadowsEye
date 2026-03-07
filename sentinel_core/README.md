@@ -1,21 +1,33 @@
-# 🛡️ SENTINEL CORE - ELITE OSINT PLATFORM
+# 🛡️ SENTINEL CORE - ELITE OSINT & PENTESTING PLATFORM
 
 **Developed by:** Syed Abrar (Alias: Cyb3rvolt3x)  
 **Organization:** [SentinelReign.com](https://sentinelreign.com)  
 **Classification:** ELITE TIER - For Intelligence Agencies, Military & Ethical Hackers  
+**AI Powered:** NVIDIA NIM + Moonshot AI Kimi K2.5 Integration  
 
 ---
 
 ## 🎯 OVERVIEW
 
-Sentinel Core is a **production-grade, modular OSINT platform** designed for:
-- **RAW / MOSSAD / IB** Intelligence Operations
+Sentinel Core is a **production-grade, modular OSINT and penetration testing platform** designed for:
+- **RAW / MOSSAD / IB / CIA / NSA** Intelligence Operations
 - **Military Cyber Commands** (USCYBERCOM, IDF, GCHQ, etc.)
 - **Elite Bug Bounty Hunters** & Penetration Testers
 - **SOC Teams** & Incident Responders
 - **Threat Intelligence Analysts**
+- **Red Team Operators** & Adversarial Simulation
 
-This is the **premier choice** for nation-state level reconnaissance, automated penetration testing workflows, and threat intelligence fusion.
+This is the **premier choice** for nation-state level reconnaissance, automated penetration testing workflows, threat intelligence fusion, and AI-assisted security operations with agentic automation capabilities.
+
+### 🌟 NEW: Kimi Moonshot AI Integration
+Powered by **NVIDIA NIM** and **Moonshot AI Kimi K2.5**, Sentinel Core now features:
+- **8 Elite AI Roles**: Ethical Hacker, Incident Responder, OSINT Specialist, Report Engineer, Red Teamer, Threat Hunter, Cloud Security, AppSec
+- **Custom Role Creation**: Define your own specialist personas for IB, MOSSAD, RAW tactics
+- **Agentic Capabilities**: AI can suggest and execute tools with user confirmation
+- **Context-Aware Analysis**: Automatic scan result integration when you click
+- **Memory System**: Conversation history and long-term memory for continuity
+- **Streaming Support**: Real-time responses with thinking mode enabled
+- **Automatic Fallback**: Works locally without API key (provides basic suggestions)
 
 ---
 
@@ -134,11 +146,47 @@ def my_custom_recon(target):
 - IOC extraction & export
 - Chain of custody evidence tracking
 
-### 📝 Integrated Notes System
-- Create case-specific notes
-- Link notes to entities/evidence
-- Markdown support
-- Export with reports
+### 📝 Integrated Notes System with AI
+- Create case-specific notes with rich text editing
+- Link notes to entities/evidence/reports
+- **AI-Powered Analysis**: Kimi AI analyzes notes and provides insights
+- **Role-Based Assistance**: Get help from Ethical Hacker, Incident Responder, OSINT Specialist personas
+- **Agentic Automation**: AI can suggest and execute follow-up actions
+- Markdown support with syntax highlighting
+- Tag-based organization
+- Export with reports or standalone
+
+### 🔄 Advanced Correlation Engine
+- IP infrastructure correlation (subnet clustering)
+- Domain cluster analysis
+- SSL certificate correlation across targets
+- WHOIS pattern matching
+- Vulnerability chain detection
+- Attack campaign identification
+- STIX 2.1 export for threat sharing
+
+### 🎯 MITRE ATT&CK Framework Integration
+- Automatic technique mapping from findings
+- 14 tactics covered (Reconnaissance → Impact)
+- Navigator layer JSON export
+- Pre-loaded technique database
+- TTP-based reporting
+
+### 📚 Automated Playbook Engine
+Pre-built elite tactics:
+- **MITNICK Recon**: Kevin Mitnick inspired social engineering methodology
+- **Bug Hunter Web**: Top bug hunter workflows for web apps
+- **External Network**: Elite pentester techniques for network recon
+- **Incident Response**: IR specialist triage procedures
+- Conditional step execution with timeout management
+- Custom playbook creation support
+
+### 🤖 ML-Based Anomaly Detection
+- Port usage anomaly detection
+- Subdomain spray pattern identification
+- Critical CVE prioritization
+- Certificate anomaly detection
+- Risk scoring (0-100) with explanations
 
 ---
 
@@ -153,13 +201,22 @@ def my_custom_recon(target):
 ```bash
 cd sentinel_core
 pip install -r requirements.txt
-python shadowseye.py
+python app.py  # or python shadowseye.py
 ```
 
 **Access:** http://localhost:5001  
 **Default Credentials:** `admin` / `admin123`
 
 ⚠️ **CHANGE DEFAULT CREDENTIALS IMMEDIATELY!**
+
+### Kimi AI Configuration (Optional)
+To enable AI-powered features:
+1. Get NVIDIA API key from https://build.nvidia.com
+2. Go to Settings in the UI
+3. Enter your API token
+4. Select model: `moonshotai/kimi-k2.5`
+5. Enable agentic mode for automation suggestions
+6. Configure custom roles for IB/MOSSAD/RAW tactics
 
 ---
 
