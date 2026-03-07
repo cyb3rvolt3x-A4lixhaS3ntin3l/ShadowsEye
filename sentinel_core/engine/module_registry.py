@@ -164,7 +164,7 @@ registry = ModuleRegistry()
 
 
 def register_builtin_modules():
-    """Register all built-in modules"""
+    """Register all built-in modules including advanced OSINT sources"""
     import sys
     import os
     
@@ -186,7 +186,8 @@ def register_builtin_modules():
         module_id='dns',
         name='DNS Enumeration',
         description='DNS records and subdomain discovery',
-        version='1.0.0',
+        version='2.1.0',
+        author='Syed Abrar (Cyb3rvolt3x)',
         category='recon'
     ).set_input_schema({
         'target': {'type': 'string', 'required': True, 'description': 'Domain name'}
@@ -203,7 +204,8 @@ def register_builtin_modules():
         module_id='whois',
         name='WHOIS Lookup',
         description='Domain registration information',
-        version='1.0.0',
+        version='2.0.0',
+        author='Syed Abrar (Cyb3rvolt3x)',
         category='recon'
     ).set_input_schema({
         'target': {'type': 'string', 'required': True, 'description': 'Domain name'}
@@ -220,7 +222,8 @@ def register_builtin_modules():
         module_id='ssl',
         name='SSL Certificate Analysis',
         description='Certificate details and validity',
-        version='1.0.0',
+        version='2.0.0',
+        author='Syed Abrar (Cyb3rvolt3x)',
         category='recon'
     ).set_input_schema({
         'target': {'type': 'string', 'required': True, 'description': 'Domain or URL'}
@@ -237,7 +240,8 @@ def register_builtin_modules():
         module_id='crtsh',
         name='Certificate Transparency',
         description='Subdomain discovery via CT logs',
-        version='1.0.0',
+        version='2.0.0',
+        author='Syed Abrar (Cyb3rvolt3x)',
         category='recon'
     ).set_input_schema({
         'target': {'type': 'string', 'required': True, 'description': 'Domain name'}
@@ -247,6 +251,93 @@ def register_builtin_modules():
     }).set_timeout(60).set_retries(3)
     
     registry.register(crtsh_meta, crtsh_module.search_crtsh)
+    
+    # Shodan Module (Optional - requires API key)
+    try:
+        from modules import shodan_module
+        shodan_meta = ModuleMetadata(
+            module_id='shodan',
+            name='Shodan Search',
+            description='IoT device and service discovery via Shodan',
+            version='2.0.0',
+            author='Syed Abrar (Cyb3rvolt3x)',
+            category='recon'
+        ).set_input_schema({
+            'target': {'type': 'string', 'required': True, 'description': 'IP, domain, or search query'}
+        }).set_output_schema({
+            'results': {'type': 'array'},
+            'total': {'type': 'integer'}
+        }).require_secrets(['SHODAN_API_KEY']).set_timeout(60).set_retries(2)
+        
+        registry.register(shodan_meta, shodan_module.run_shodan_search)
+    except ImportError:
+        pass
+    
+    # VirusTotal Module (Optional - requires API key)
+    try:
+        from modules import virustotal_module
+        vt_meta = ModuleMetadata(
+            module_id='virustotal',
+            name='VirusTotal Analysis',
+            description='Malware and URL reputation checking',
+            version='2.0.0',
+            author='Syed Abrar (Cyb3rvolt3x)',
+            category='threat_intel'
+        ).set_input_schema({
+            'target': {'type': 'string', 'required': True, 'description': 'File hash, URL, domain, or IP'}
+        }).set_output_schema({
+            'detections': {'type': 'integer'},
+            'total_engines': {'type': 'integer'},
+            'report': {'type': 'object'}
+        }).require_secrets(['VIRUSTOTAL_API_KEY']).set_timeout(45).set_retries(3)
+        
+        registry.register(vt_meta, virustotal_module.run_virustotal_scan)
+    except ImportError:
+        pass
+    
+    # Wayback Machine Module
+    try:
+        from modules import wayback_module
+        wayback_meta = ModuleMetadata(
+            module_id='wayback',
+            name='Wayback Machine Archive',
+            description='Historical website snapshots and subdomains',
+            version='2.0.0',
+            author='Syed Abrar (Cyb3rvolt3x)',
+            category='recon'
+        ).set_input_schema({
+            'target': {'type': 'string', 'required': True, 'description': 'Domain name'}
+        }).set_output_schema({
+            'snapshots': {'type': 'array'},
+            'subdomains': {'type': 'array'}
+        }).set_timeout(90).set_retries(2)
+        
+        registry.register(wayback_meta, wayback_module.search_wayback_machine)
+    except ImportError:
+        pass
+    
+    # Hunter.io Module (Optional - requires API key)
+    try:
+        from modules import hunter_module
+        hunter_meta = ModuleMetadata(
+            module_id='hunter',
+            name='Hunter.io Email Finder',
+            description='Professional email address discovery',
+            version='2.0.0',
+            author='Syed Abrar (Cyb3rvolt3x)',
+            category='recon'
+        ).set_input_schema({
+            'target': {'type': 'string', 'required': True, 'description': 'Domain name'}
+        }).set_output_schema({
+            'emails': {'type': 'array'},
+            'sources': {'type': 'array'}
+        }).require_secrets(['HUNTER_API_KEY']).set_timeout(60).set_retries(2)
+        
+        registry.register(hunter_meta, hunter_module.run_hunter_search)
+    except ImportError:
+        pass
+    
+    print(f"[*] Registered {len(registry.modules)} built-in modules: {', '.join(registry.modules.keys())}")
 
 
 if __name__ == '__main__':
