@@ -1,97 +1,42 @@
-{% extends "base.html" %}
-{% block title %}Playbooks - Sentinel Core{% endblock %}
-{% block header_title %}Automation Playbooks{% endblock %}
-
-{% block content %}
-<div class="grid-3">
-    {% for playbook in playbooks %}
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-book"></i> {{ playbook.name }}</h3>
-        </div>
-        <p style="color: var(--text-secondary); margin-bottom: 16px;">{{ playbook.description }}</p>
-        <div style="background: var(--bg-primary); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-            <strong style="color: var(--neon-blue); font-size: 13px;">Steps:</strong>
-            {% set steps = playbook.steps | from_json %}
-            <ol style="margin: 8px 0 0 20px; font-size: 13px; color: var(--text-secondary);">
-                {% for step in steps %}
-                <li>{{ step.tool.replace('_', ' ').title() }}</li>
-                {% endfor %}
-            </ol>
-        </div>
-        <button class="btn btn-primary" style="width: 100%;" onclick="selectEntityForPlaybook({{ playbook.id }})">
-            <i class="fas fa-play"></i> Execute Playbook
-        </button>
-    </div>
-    {% else %}
-    <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
-        <i class="fas fa-book" style="font-size: 48px; color: var(--text-muted); margin-bottom: 16px;"></i>
-        <p style="color: var(--text-muted);">No playbooks available</p>
-    </div>
-    {% endfor %}
-</div>
-
-<!-- Select Entity Modal -->
-<div class="modal-overlay" id="selectEntityModal">
-    <div class="modal">
-        <div class="modal-header">
-            <h3 class="modal-title">Select Target Entity</h3>
-            <button class="modal-close" onclick="document.getElementById('selectEntityModal').classList.remove('active')">&times;</button>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Choose Case</label>
-            <select id="playbookCaseSelect" class="form-control" onchange="loadCaseEntities(this.value)">
-                <option value="">-- Select Case --</option>
-                {% for case in range(1) %}{# Placeholder #}
-                <option value="1">Sample Case</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Select Entity</label>
-            <select id="playbookEntitySelect" class="form-control">
-                <option value="">-- Select Entity --</option>
-            </select>
-        </div>
-        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('selectEntityModal').classList.remove('active')">Cancel</button>
-            <button type="button" class="btn btn-primary" onclick="executeSelectedPlaybook()">
-                <i class="fas fa-play"></i> Execute
-            </button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Playbooks - Sentinel Core</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f23; color: #fff; min-height: 100vh; }
+        .navbar { background: rgba(0,0,0,0.5); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,217,255,0.2); }
+        .navbar h1 { color: #00d9ff; font-size: 24px; }
+        .nav-links a { color: #888; text-decoration: none; margin-left: 20px; }
+        .nav-links a:hover { color: #00d9ff; }
+        .container { padding: 30px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .section h3 { color: #00d9ff; margin-bottom: 10px; }
+        .section p { color: #888; margin-bottom: 15px; }
+        .btn { padding: 8px 16px; border-radius: 6px; text-decoration: none; display: inline-block; border: none; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, #00d9ff, #0099cc); color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🛡️ Sentinel Core</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('cases_list') }}">Cases</a>
+            <a href="{{ url_for('playbooks_list') }}" style="color: #00d9ff;">Playbooks</a>
+            <a href="{{ url_for('logout') }}" style="color: #ff4444;">Logout</a>
         </div>
     </div>
-</div>
-
-<script>
-let selectedPlaybookId = null;
-
-function selectEntityForPlaybook(playbookId) {
-    selectedPlaybookId = playbookId;
-    document.getElementById('selectEntityModal').classList.add('active');
-}
-
-function executeSelectedPlaybook() {
-    const entityId = document.getElementById('playbookEntitySelect').value;
-    if (!entityId) {
-        alert('Please select an entity');
-        return;
-    }
-    
-    fetch(`/playbook/${selectedPlaybookId}/execute`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({entity_id: parseInt(entityId)})
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            alert('Playbook executed successfully! Check the case for results.');
-            location.reload();
-        } else {
-            alert('Error: ' + (data.error || 'Unknown error'));
-        }
-    })
-    .catch(e => alert('Error: ' + e.message));
-}
-</script>
-{% endblock %}
+    <div class="container">
+        <h2 style="color: #00d9ff; margin-bottom: 20px;">📜 Automated Playbooks</h2>
+        {% for playbook in playbooks %}
+        <div class="section">
+            <h3>{{ playbook.name }}</h3>
+            <p>{{ playbook.description }}</p>
+            <small style="color: #666;">Category: {{ playbook.category }} | Steps: {{ playbook.steps|length }}</small>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
