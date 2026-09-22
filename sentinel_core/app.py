@@ -291,18 +291,24 @@ def login():
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
+        username = (request.form.get('username') or '').strip()
+        password = request.form.get('password') or ''
+
+        # Reject empty / whitespace-only passwords before any DB lookup.
+        if not password.strip():
+            flash('Invalid username or password', 'danger')
+            log_audit('login_failed', 'user', details={'username': username, 'reason': 'empty_password'})
+            return render_template('login.html')
+
         user = User.query.filter_by(username=username).first()
-        
+
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             user.last_login = datetime.now(timezone.utc)
             db.session.commit()
-            
+
             log_audit('login', 'user', user.id)
-            
+
             next_page = request.args.get('next')
             return redirect(next_page or url_for('dashboard'))
         else:
@@ -1407,15 +1413,44 @@ def init_db():
             logger.info("Default playbooks created")
 
 
+def get_bind_host() -> str:
+    """Bind host for the Flask server. Default localhost (not 0.0.0.0).
+
+    Override with SHADOWSEYE_BIND_HOST (e.g. 0.0.0.0 only when intentionally
+    exposing on a trusted lab network).
+    """
+    host = (os.environ.get('SHADOWSEYE_BIND_HOST') or '127.0.0.1').strip()
+    return host or '127.0.0.1'
+
+
+def get_bind_port() -> int:
+    """Bind port for the Flask server. Default 5001. Override: SHADOWSEYE_BIND_PORT."""
+    raw = (os.environ.get('SHADOWSEYE_BIND_PORT') or '5001').strip() or '5001'
+    return int(raw)
+
+
+def create_app(config_overrides=None):
+    """Return the Sentinel Core Flask app (module-level instance).
+
+    Optional config_overrides are applied for tests / WSGI wrappers.
+    Prefer this helper in smoke tests over relying on side-effect imports alone.
+    """
+    if config_overrides:
+        app.config.update(config_overrides)
+    return app
+
+
 if __name__ == '__main__':
     # Ensure directories exist
     os.makedirs('logs', exist_ok=True)
     os.makedirs('db', exist_ok=True)
     os.makedirs('evidence', exist_ok=True)
     os.makedirs('user_modules', exist_ok=True)
-    
+
     # Initialize database
     init_db()
-    
-    logger.info("Starting Sentinel Core...")
-    app.run(host='0.0.0.0', port=5001, debug=False)
+
+    host = get_bind_host()
+    port = get_bind_port()
+    logger.info("Starting Sentinel Core on %s:%s (override via SHADOWSEYE_BIND_HOST / SHADOWSEYE_BIND_PORT)...", host, port)
+    app.run(host=host, port=port, debug=False)

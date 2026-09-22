@@ -54,8 +54,9 @@ New path: `resolve_host()` via `socket.getaddrinfo(..., AF_INET)` (equivalent in
 ## Residual gaps (honest)
 
 1. **`sentinel_core/` still heavy** — many live API modules remain; demoted only in the prior harden pass.
-   **P0 password/tone scrub applied separately** (see `docs/SENTINEL_CORE_P0_REVIEW.md`): no live `admin123` default;
-   authorized-use notes on sentinel_core README/templates. Bind-localhost / smoke / secrets = P1 (deferred).
+   **P0 password/tone scrub** (see `docs/SENTINEL_CORE_P0_REVIEW.md`): no live `admin123` default;
+   authorized-use notes on sentinel_core README/templates.
+   **P1 bind/smoke/secrets** applied (see `docs/SENTINEL_CORE_P1_REVIEW.md`): default bind `127.0.0.1`, smoke tests, placeholders.
 2. **WHOIS / social HTTP helpers** still hit third-party URLs when not using `--dns-only`; lab docs steer to `--dns-only`.
 3. **Breach check** is effectively a no-op for domains (HIBP range is hash-prefix); needs a real authorized brand-monitor integration later or removal.
 4. **Threading + global `found_subdomains`** retained for CLI shape; fine for lab, not ideal for library reuse.

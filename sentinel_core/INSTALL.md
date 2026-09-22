@@ -35,7 +35,9 @@
    ```
 
 5. **Access the application**
-   - Open browser: `http://localhost:5000` (or the port printed by `app.py`, often `5001`)
+   - Server binds to `127.0.0.1:5001` by default (not `0.0.0.0`). Override with
+     `SHADOWSEYE_BIND_HOST` / `SHADOWSEYE_BIND_PORT` if needed.
+   - Open browser: `http://127.0.0.1:5001`
    - Username: `admin`
    - Password: set `SHADOWSEYE_ADMIN_PASSWORD` before first boot, **or** read the
      one-time generated password printed to the console (no committed default)

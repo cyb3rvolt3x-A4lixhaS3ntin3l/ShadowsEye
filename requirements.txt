@@ -5,3 +5,8 @@ pytest>=8.0.0
 # sentinel_core/ is an optional advanced UI/platform.
 # Install its extra deps only if you run that tree:
 #   pip install -r sentinel_core/requirements.txt
+
+# Full test suite (CLI + sentinel_core smoke):
+#   pip install -r requirements.txt -r sentinel_core/requirements.txt
+#   pytest
+
