@@ -27,6 +27,8 @@ python shadowseye.py lab.shadowseye.local \
   --wordlist tests/fixtures/tiny_wordlist.txt \
   --ports 80-80 \
   --dns-only
+# (default is already safe; --dns-only is an explicit alias.
+# Use --extras only when you intentionally want WHOIS/profile helpers.)
 ```
 
 Expected: DNS/port lines for the lab host; empty or sparse subdomain hits on a single-label lab name (that is fine — the demo is the authorized workflow, not a vanity subdomain count).

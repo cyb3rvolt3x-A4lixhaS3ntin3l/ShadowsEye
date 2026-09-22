@@ -189,31 +189,18 @@ def social_media_scan(target: str, stream=None) -> None:
 
 def password_leak_check(target: str, stream=None) -> None:
     """
-    Placeholder situational check. HIBP range API is hash-prefix based, not domain;
-    this path is kept for CLI compatibility and reports skip/fail cleanly.
+    Honest skip: no domain-keyed breach API in this tool.
+
+    HIBP range API is hash-prefix based, not domain-keyed. This helper never
+    performs network egress (no dummy pwnedpasswords probe).
     """
     out = stream if stream is not None else sys.stdout
-    if requests is None:
-        print("[-] Breach check skipped (requests not installed)", file=out)
-        return
-    try:
-        response = requests.get(
-            "https://api.pwnedpasswords.com/range/00000",
-            timeout=10,
-            headers={"User-Agent": "ShadowsEye-authorized-lab"},
-        )
-    except requests.RequestException as exc:
-        print(f"[!] Failed to reach breach API: {exc}", file=out)
-        return
-    if response.status_code == 200:
-        # Domain-keyed leak enumeration is not supported by this endpoint.
-        print(
-            f"[-] No domain-keyed breach enumeration available for {target} "
-            "(API is hash-prefix only; use an authorized org process for brand monitoring)",
-            file=out,
-        )
-    else:
-        print("[!] Failed to retrieve password leak data", file=out)
+    print(
+        f"[-] Breach check skipped for {target}: no domain-keyed HIBP brand API "
+        "in this tool (zero network egress; use an authorized org process for "
+        "brand monitoring)",
+        file=out,
+    )
 
 
 def run_information_gathering(
@@ -221,10 +208,14 @@ def run_information_gathering(
     wordlist: str,
     port_range: Sequence[int],
     *,
-    skip_network_extras: bool = False,
+    include_extras: bool = False,
     stream=None,
 ) -> List[str]:
-    """Run inventory modules against a scoped target. Returns discovered subdomains."""
+    """Run inventory modules against a scoped target. Returns discovered subdomains.
+
+    Safe by default: only DNS + wordlist subdomain discovery + ports run.
+    Pass include_extras=True to also run WHOIS / social / breach helpers.
+    """
     global found_subdomains
     out = stream if stream is not None else sys.stdout
     found_subdomains = []
@@ -241,10 +232,16 @@ def run_information_gathering(
     dns_lookup(target, stream=out)
     port_scan(target, port_range, stream=out)
 
-    if not skip_network_extras:
+    if include_extras:
         whois_lookup(target, stream=out)
         social_media_scan(target, stream=out)
         password_leak_check(target, stream=out)
+    else:
+        print(
+            "[*] Skipping WHOIS / profile / breach extras "
+            "(safe default; pass --extras to opt in)",
+            file=out,
+        )
 
     t1.join()
 
@@ -279,9 +276,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Port range for scanning (format: start-end)",
     )
     parser.add_argument(
+        "--extras",
+        action="store_true",
+        help=(
+            "Opt into WHOIS / profile / breach helpers "
+            "(off by default; safe path is DNS + ports + wordlist only)"
+        ),
+    )
+    parser.add_argument(
         "--dns-only",
         action="store_true",
-        help="Skip WHOIS / profile / breach HTTP extras (DNS + ports + wordlist only)",
+        help=(
+            "Explicit alias for the safe path (DNS + ports + wordlist only). "
+            "Conflicts with --extras (exit 2)."
+        ),
     )
     parser.add_argument(
         "--quiet-banner",
@@ -294,6 +302,15 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[Iterable[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(list(argv) if argv is not None else None)
+
+    if args.extras and args.dns_only:
+        print(
+            "[-] Conflicting flags: --extras and --dns-only cannot both be set. "
+            "Use --extras to opt into WHOIS/profile/breach helpers, or --dns-only "
+            "(or omit both) for the safe DNS + ports + wordlist path.",
+            file=sys.stderr,
+        )
+        return 2
 
     if not args.quiet_banner:
         authorized_banner()
@@ -308,7 +325,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         args.target,
         args.wordlist,
         port_range,
-        skip_network_extras=args.dns_only,
+        include_extras=bool(args.extras),
     )
     return 0
 

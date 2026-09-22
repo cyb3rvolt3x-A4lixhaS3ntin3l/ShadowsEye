@@ -10,13 +10,13 @@ Related platform: [gungnir](https://github.com/cyb3rvolt3x-A4lixhaS3ntin3l/gungn
 
 ## What it does
 
-| Capability | Purpose (defensive) |
-| --- | --- |
-| DNS lookup | Resolve hosts you already own or are scoped to inventory |
-| Subdomain wordlist pass | Find forgotten names in *your* DNS tree |
-| Port sweep (bounded range) | See which services are exposed on scoped hosts |
-| WHOIS lookup | Registration metadata for scoped domains |
-| Optional profile / breach checks | Placeholder only today (not a live domain-keyed HIBP brand monitor) |
+| Capability | Default | Purpose (defensive) |
+| --- | --- | --- |
+| DNS lookup | on | Resolve hosts you already own or are scoped to inventory |
+| Subdomain wordlist pass | on | Find forgotten names in *your* DNS tree |
+| Port sweep (bounded range) | on | See which services are exposed on scoped hosts |
+| WHOIS lookup | off (`--extras`) | Registration metadata for scoped domains |
+| Optional profile / breach checks | off (`--extras`) | Profile HTTP optional; breach helper is an honest skip (zero egress, not a live domain-keyed HIBP brand monitor) |
 
 This repo is an inventory helper. It does **not** ship exploit modules, exploit PoCs, or attack runbooks.
 
@@ -44,10 +44,15 @@ Alternatively (no editable package): `pip install -r requirements.txt` then `pyt
 Prefer the lab path in [`docs/DEMO.md`](docs/DEMO.md) before any remote host.
 
 ```bash
+# Safe by default: DNS + wordlist subdomains + ports only
+python shadowseye.py lab.shadowseye.local --wordlist tests/fixtures/tiny_wordlist.txt --ports 80-80
+# Explicit safe-path alias (compat with older docs/scripts):
 python shadowseye.py lab.shadowseye.local --wordlist tests/fixtures/tiny_wordlist.txt --ports 80-80 --dns-only
+# Opt into WHOIS / profile / breach helpers:
+python shadowseye.py lab.shadowseye.local --wordlist tests/fixtures/tiny_wordlist.txt --ports 80-80 --extras
 ```
 
-Replace the hostname with a host you control (local lab DNS / `/etc/hosts`, or a domain in a signed scope brief). Use `--dns-only` for a quiet lab run that skips WHOIS / profile HTTP extras.
+Replace the hostname with a host you control (local lab DNS / `/etc/hosts`, or a domain in a signed scope brief). **Safe by default:** WHOIS / profile / breach helpers stay off unless you pass `--extras`. `--dns-only` remains an explicit alias for that safe path (conflicts with `--extras`, exit 2).
 
 ## Authorized-use banner
 
@@ -68,7 +73,7 @@ subdomain.txt              # sample wordlist (lab-sized)
 tests/                     # mocked DNS/socket tests (no live scans)
 docs/DEMO.md               # lab-only walkthrough
 docs/HARDEN_REVIEW.md      # harden notes for maintainers
-docs/SHADOWSEYE_P0_RESEARCH.md / SHADOWSEYE_P0_REVIEW.md  # packaging P0
+docs/SHADOWSEYE_P0_*.md / SHADOWSEYE_P1_REVIEW.md  # packaging P0 + safe-default P1
 sentinel_core/             # ADVANCED / optional UI + extra modules — not the product CLI
 ```
 

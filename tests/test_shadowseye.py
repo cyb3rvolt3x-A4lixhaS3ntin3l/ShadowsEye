@@ -152,3 +152,154 @@ def test_main_dns_only_with_mocks(tmp_path):
                         ]
                     )
     assert code == 0
+
+
+def test_password_leak_check_never_calls_requests():
+    buf = io.StringIO()
+    mock_get = MagicMock()
+    with patch.object(se, "requests") as mock_requests:
+        mock_requests.get = mock_get
+        se.password_leak_check("lab.example", stream=buf)
+    mock_get.assert_not_called()
+    out = buf.getvalue().lower()
+    assert "skipped" in out
+    assert "zero network egress" in out or "no domain-keyed" in out
+
+
+def test_run_information_gathering_default_skips_extras():
+    buf = io.StringIO()
+    with patch.object(se, "bruteforce_subdomains", return_value=[]):
+        with patch.object(se, "dns_lookup", return_value=None):
+            with patch.object(se, "port_scan", return_value=[]):
+                with patch.object(se, "whois_lookup") as mock_whois:
+                    with patch.object(se, "social_media_scan") as mock_social:
+                        with patch.object(se, "password_leak_check") as mock_breach:
+                            se.run_information_gathering(
+                                "lab.example",
+                                str(TINY_WORDLIST),
+                                (80, 80),
+                                stream=buf,
+                            )
+    mock_whois.assert_not_called()
+    mock_social.assert_not_called()
+    mock_breach.assert_not_called()
+    assert "Skipping WHOIS" in buf.getvalue()
+
+
+def test_run_information_gathering_extras_calls_helpers():
+    buf = io.StringIO()
+    with patch.object(se, "bruteforce_subdomains", return_value=[]):
+        with patch.object(se, "dns_lookup", return_value=None):
+            with patch.object(se, "port_scan", return_value=[]):
+                with patch.object(se, "whois_lookup") as mock_whois:
+                    with patch.object(se, "social_media_scan") as mock_social:
+                        with patch.object(se, "password_leak_check") as mock_breach:
+                            se.run_information_gathering(
+                                "lab.example",
+                                str(TINY_WORDLIST),
+                                (80, 80),
+                                include_extras=True,
+                                stream=buf,
+                            )
+    mock_whois.assert_called_once()
+    mock_social.assert_called_once()
+    mock_breach.assert_called_once()
+
+
+def test_main_default_safe_path_no_extras(tmp_path):
+    wl = tmp_path / "w.txt"
+    wl.write_text("www\n", encoding="utf-8")
+    with patch.object(se, "resolve_host", return_value="127.0.0.1"):
+        with patch.object(se, "port_scan", return_value=[]):
+            with patch.object(se, "whois_lookup") as mock_whois:
+                with patch.object(se, "social_media_scan") as mock_social:
+                    with patch.object(se, "password_leak_check") as mock_breach:
+                        with patch.object(se, "authorized_banner"):
+                            code = se.main(
+                                [
+                                    "lab.example",
+                                    "--wordlist",
+                                    str(wl),
+                                    "--ports",
+                                    "80-80",
+                                    "--quiet-banner",
+                                ]
+                            )
+    assert code == 0
+    mock_whois.assert_not_called()
+    mock_social.assert_not_called()
+    mock_breach.assert_not_called()
+
+
+def test_main_extras_opts_in(tmp_path):
+    wl = tmp_path / "w.txt"
+    wl.write_text("www\n", encoding="utf-8")
+    with patch.object(se, "resolve_host", return_value="127.0.0.1"):
+        with patch.object(se, "port_scan", return_value=[]):
+            with patch.object(se, "whois_lookup") as mock_whois:
+                with patch.object(se, "social_media_scan") as mock_social:
+                    with patch.object(se, "password_leak_check") as mock_breach:
+                        with patch.object(se, "authorized_banner"):
+                            code = se.main(
+                                [
+                                    "lab.example",
+                                    "--wordlist",
+                                    str(wl),
+                                    "--ports",
+                                    "80-80",
+                                    "--extras",
+                                    "--quiet-banner",
+                                ]
+                            )
+    assert code == 0
+    mock_whois.assert_called_once()
+    mock_social.assert_called_once()
+    mock_breach.assert_called_once()
+
+
+def test_main_extras_and_dns_only_conflict(tmp_path, capsys):
+    wl = tmp_path / "w.txt"
+    wl.write_text("www\n", encoding="utf-8")
+    code = se.main(
+        [
+            "lab.example",
+            "--wordlist",
+            str(wl),
+            "--ports",
+            "80-80",
+            "--extras",
+            "--dns-only",
+            "--quiet-banner",
+        ]
+    )
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "Conflicting flags" in err
+    assert "--extras" in err and "--dns-only" in err
+
+
+def test_main_dns_only_still_safe(tmp_path):
+    """--dns-only remains an explicit alias for the safe path."""
+    wl = tmp_path / "w.txt"
+    wl.write_text("www\n", encoding="utf-8")
+    with patch.object(se, "resolve_host", return_value="127.0.0.1"):
+        with patch.object(se, "port_scan", return_value=[]):
+            with patch.object(se, "whois_lookup") as mock_whois:
+                with patch.object(se, "social_media_scan") as mock_social:
+                    with patch.object(se, "password_leak_check") as mock_breach:
+                        with patch.object(se, "authorized_banner"):
+                            code = se.main(
+                                [
+                                    "lab.example",
+                                    "--wordlist",
+                                    str(wl),
+                                    "--ports",
+                                    "80-80",
+                                    "--dns-only",
+                                    "--quiet-banner",
+                                ]
+                            )
+    assert code == 0
+    mock_whois.assert_not_called()
+    mock_social.assert_not_called()
+    mock_breach.assert_not_called()
