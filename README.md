@@ -20,17 +20,30 @@ Related platform: [gungnir](https://github.com/cyb3rvolt3x-A4lixhaS3ntin3l/gungn
 
 This repo is an inventory helper. It does **not** ship exploit modules, exploit PoCs, or attack runbooks.
 
-## Quick start (lab)
+## Install (product CLI)
+
+The stranger-facing product is the **root** `shadowseye.py`. Tests and `--help` work offline after install.
+
+```bash
+git clone https://github.com/cyb3rvolt3x-A4lixhaS3ntin3l/ShadowsEye.git
+cd ShadowsEye
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python shadowseye.py --help
+python -m pytest
+```
+
+`pip install -r requirements.txt` plus `python shadowseye.py --help` does not need live internet scans (requests is imported lazily for optional HTTP extras).
+
+## Lab demo path
 
 Prefer the lab path in [`docs/DEMO.md`](docs/DEMO.md) before any remote host.
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt   # if present under sentinel_core/
-python shadowseye.py example.lab --wordlist subdomain.txt --ports 1-1024
+python shadowseye.py lab.shadowseye.local --wordlist tests/fixtures/tiny_wordlist.txt --ports 80-80 --dns-only
 ```
 
-Replace `example.lab` with a host you control (local lab DNS or a domain in a signed scope brief).
+Replace the hostname with a host you control (local lab DNS / `/etc/hosts`, or a domain in a signed scope brief). Use `--dns-only` for a quiet lab run that skips WHOIS / profile HTTP extras.
 
 ## Authorized-use banner
 
@@ -43,11 +56,22 @@ By running ShadowsEye you confirm:
 ## Layout
 
 ```
-shadowseye.py          # CLI entry
-subdomain.txt          # sample wordlist (lab-sized)
-sentinel_core/         # extended modules / UI (see that tree’s docs)
-docs/DEMO.md           # lab-only walkthrough
+shadowseye.py              # PRIMARY CLI (product entry for strangers)
+requirements.txt           # product CLI + pytest
+LICENSE                    # MIT
+subdomain.txt              # sample wordlist (lab-sized)
+tests/                     # mocked DNS/socket tests (no live scans)
+docs/DEMO.md               # lab-only walkthrough
+docs/HARDEN_REVIEW.md      # harden notes for maintainers
+sentinel_core/             # ADVANCED / optional UI + extra modules — not the product CLI
 ```
+
+### Dual entry note
+
+| Path | Status |
+| --- | --- |
+| `python shadowseye.py` | **Use this.** Product CLI. |
+| `sentinel_core/` | Optional advanced platform / glass UI. Deferred for strangers. See [`sentinel_core/README.md`](sentinel_core/README.md). Do not start here. |
 
 ## What this is not
 
@@ -57,7 +81,7 @@ docs/DEMO.md           # lab-only walkthrough
 
 ## License
 
-MIT (see repository license file if present; otherwise treat contributions as MIT-intended until LICENSE is confirmed on push).
+MIT — see [LICENSE](LICENSE).
 
 ## Maintainer
 

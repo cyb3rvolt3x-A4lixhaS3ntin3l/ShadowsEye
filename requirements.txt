@@ -1,0 +1,7 @@
+# ShadowsEye product CLI (root shadowseye.py)
+requests>=2.31.0,<3
+pytest>=8.0.0
+
+# sentinel_core/ is an optional advanced UI/platform.
+# Install its extra deps only if you run that tree:
+#   pip install -r sentinel_core/requirements.txt

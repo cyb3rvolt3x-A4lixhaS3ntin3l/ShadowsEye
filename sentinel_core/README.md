@@ -1,3 +1,14 @@
+> **Advanced / optional — not the product CLI.**
+>
+> Strangers and lab demos should use the **repository-root** `shadowseye.py`.
+> `sentinel_core/` is an extended UI + multi-module platform (Flask app, extra
+> integrations). It is demoted for now: keep for maintainers who need the
+> dashboard; do not treat it as the primary entry. See root `README.md`.
+>
+> Default credentials below are for **local lab only** — change before any shared deployment.
+
+---
+
 # 🛡️ Sentinel Core - Elite Cybersecurity Intelligence Platform
 
 ## Overview

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Show an authorized recon inventory against a **host you control**, then stop. No internet drive-by targets.
+Show an authorized recon inventory against a **host you control**, then stop. No internet drive-by targets. This is a workflow demo, not an attack runbook.
 
 ## Lab options (pick one)
 
@@ -10,14 +10,28 @@ Show an authorized recon inventory against a **host you control**, then stop. No
 2. **Docker lab** — run any single-host training container you already use on a private compose network; use its service DNS name only.
 3. **Owned domain** — a domain in a written bug-bounty or internal ASM scope.
 
-## Steps
+## Install check (offline-enough)
 
 ```bash
-cd ShadowsEye
-python3 shadowseye.py lab.shadowseye.local --wordlist subdomain.txt --ports 80-90
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python shadowseye.py --help
+```
+
+`--help` must print usage without contacting the network.
+
+## Inventory against a lab host
+
+```bash
+python shadowseye.py lab.shadowseye.local \
+  --wordlist tests/fixtures/tiny_wordlist.txt \
+  --ports 80-80 \
+  --dns-only
 ```
 
 Expected: DNS/port lines for the lab host; empty or sparse subdomain hits on a single-label lab name (that is fine — the demo is the authorized workflow, not a vanity subdomain count).
+
+Unit tests cover the subdomain-discovery bugfix with mocked DNS (`python -m pytest`). Do not use pytest as a live scanner.
 
 ## Stop conditions
 
