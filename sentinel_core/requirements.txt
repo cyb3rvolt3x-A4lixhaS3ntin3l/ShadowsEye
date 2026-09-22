@@ -7,7 +7,7 @@ bcrypt==4.1.2
 requests==2.31.0
 dnspython==2.4.2
 python-whois==0.8.0
-nmap==1.7.0
+# Dropped non-existent PyPI pin nmap==1.7.0; use python-nmap + system nmap binary if needed.
 geoip2==4.8.0
 maxminddb==2.5.1
 cryptography==41.0.7
