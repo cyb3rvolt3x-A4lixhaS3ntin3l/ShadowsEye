@@ -1,3 +1,5 @@
+> **Mirror note (2026-09-22):** Active Sentinel Suite Eye package work is in [`sentinel-suite`](https://github.com/cyb3rvolt3x-A4lixhaS3ntin3l/sentinel-suite) (`packages/shadowseye`). This repo stays for historical CLI / prior releases.
+
 # ShadowsEye — lab-only demo
 
 ## Goal
