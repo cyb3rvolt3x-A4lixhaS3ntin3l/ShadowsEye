@@ -313,5 +313,10 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     return 0
 
 
+def cli() -> None:
+    """Console-script entry (pip install -e . → `shadowseye`)."""
+    raise SystemExit(main())
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    cli()

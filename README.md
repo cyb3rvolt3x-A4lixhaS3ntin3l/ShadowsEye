@@ -16,24 +16,28 @@ Related platform: [gungnir](https://github.com/cyb3rvolt3x-A4lixhaS3ntin3l/gungn
 | Subdomain wordlist pass | Find forgotten names in *your* DNS tree |
 | Port sweep (bounded range) | See which services are exposed on scoped hosts |
 | WHOIS lookup | Registration metadata for scoped domains |
-| Optional profile / breach checks | Situational awareness for *your* brand names — not credential abuse |
+| Optional profile / breach checks | Placeholder only today (not a live domain-keyed HIBP brand monitor) |
 
 This repo is an inventory helper. It does **not** ship exploit modules, exploit PoCs, or attack runbooks.
 
 ## Install (product CLI)
 
-The stranger-facing product is the **root** `shadowseye.py`. Tests and `--help` work offline after install.
+The stranger-facing product is the **root** CLI (`shadowseye.py`), also installable as the `shadowseye` console command. Tests and `--help` work offline after install.
 
 ```bash
 git clone https://github.com/cyb3rvolt3x-A4lixhaS3ntin3l/ShadowsEye.git
 cd ShadowsEye
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e ".[dev]"
+shadowseye --help
+# historical path still works:
 python shadowseye.py --help
-python -m pytest
+pytest
 ```
 
-`pip install -r requirements.txt` plus `python shadowseye.py --help` does not need live internet scans (requests is imported lazily for optional HTTP extras).
+`pip install -e .` wires the console entry from `pyproject.toml`. Runtime dep is `requests`; `[dev]` adds `pytest`. No live internet scans are required for `--help` or the mocked test suite.
+
+Alternatively (no editable package): `pip install -r requirements.txt` then `python shadowseye.py --help`.
 
 ## Lab demo path
 
@@ -57,12 +61,14 @@ By running ShadowsEye you confirm:
 
 ```
 shadowseye.py              # PRIMARY CLI (product entry for strangers)
-requirements.txt           # product CLI + pytest
+pyproject.toml             # packaging + `shadowseye` console_scripts entry
+requirements.txt           # product CLI + pytest (compat / non-editable path)
 LICENSE                    # MIT
 subdomain.txt              # sample wordlist (lab-sized)
 tests/                     # mocked DNS/socket tests (no live scans)
 docs/DEMO.md               # lab-only walkthrough
 docs/HARDEN_REVIEW.md      # harden notes for maintainers
+docs/SHADOWSEYE_P0_RESEARCH.md / SHADOWSEYE_P0_REVIEW.md  # packaging P0
 sentinel_core/             # ADVANCED / optional UI + extra modules — not the product CLI
 ```
 
@@ -70,7 +76,8 @@ sentinel_core/             # ADVANCED / optional UI + extra modules — not the 
 
 | Path | Status |
 | --- | --- |
-| `python shadowseye.py` | **Use this.** Product CLI. |
+| `shadowseye` (after `pip install -e .`) | **Preferred.** Console entry → same CLI as root module. |
+| `python shadowseye.py` | Still supported (historical / no-install path). |
 | `sentinel_core/` | Optional advanced platform / glass UI. Deferred for strangers. See [`sentinel_core/README.md`](sentinel_core/README.md). Do not start here. |
 
 ## What this is not
