@@ -1327,21 +1327,39 @@ def init_db():
     with app.app_context():
         db.create_all()
         
-        # Create admin user if not exists
+        # Create admin user if not exists.
+        # Prefer SHADOWSEYE_ADMIN_PASSWORD; otherwise one-time generate + print.
         admin = User.query.filter_by(username='admin').first()
         if not admin:
-            # Generate secure random password for initial admin
             import secrets
-            initial_password = secrets.token_urlsafe(16)
+            initial_password = os.environ.get('SHADOWSEYE_ADMIN_PASSWORD')
+            generated = False
+            if not initial_password:
+                initial_password = secrets.token_urlsafe(16)
+                generated = True
             admin = User(
                 username='admin',
                 email='admin@sentinel.local',
                 password_hash=generate_password_hash(initial_password),
                 role='admin'
             )
-            logger.info(f"Initial admin password (CHANGE IMMEDIATELY): {initial_password}")
             db.session.add(admin)
             db.session.commit()
+            if generated:
+                msg = (
+                    f"FIRST BOOT: admin password auto-generated — "
+                    f"Username: admin  Password: {initial_password}  "
+                    f"(set SHADOWSEYE_ADMIN_PASSWORD to supply your own; change immediately)"
+                )
+                print(f"\n*** {msg} ***\n")
+                logger.warning(msg)
+            else:
+                msg = (
+                    "FIRST BOOT: admin created from SHADOWSEYE_ADMIN_PASSWORD "
+                    "(password not printed)"
+                )
+                print(f"\n*** {msg} ***\n")
+                logger.info(msg)
         
         # Create default playbooks
         if Playbook.query.count() == 0:

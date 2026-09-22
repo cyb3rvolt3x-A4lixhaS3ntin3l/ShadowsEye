@@ -1,6 +1,19 @@
-# 🎉 SENTINEL CORE - FINAL UPDATE SUMMARY
+> **HISTORICAL / ARCHIVED (P0 scrub 2026-09-22 Asia/Colombo).**
+>
+> This file was an aspirational "all fixed" write-up. It claimed the admin password
+> had already moved off hardcoded `admin123` to secure random generation, while
+> `models/intelligence.py` still seeded `admin123` and READMEs still documented it.
+> That honesty gap is closed in the **Sentinel Core P0** pass:
+> env `SHADOWSEYE_ADMIN_PASSWORD` or one-time generate + console print; docs updated.
+> Treat the checklist below as a **historical snapshot**, not current truth.
+> Current password / authorized-use guidance: `README.md`, `README_COMPLETE.md`,
+> `.env.example`, and `docs/SENTINEL_CORE_P0_REVIEW.md` (repo root `docs/`).
 
-## ✅ ALL ISSUES FIXED
+---
+
+# 🎉 SENTINEL CORE - FINAL UPDATE SUMMARY (historical)
+
+## ✅ Issues claimed fixed (snapshot — see banner)
 
 ### 1. Module Function Name Mismatches - FIXED ✓
 **Before:** App.py called non-existent functions
@@ -19,8 +32,10 @@ All 3 missing templates now exist:
 
 ### 3. Security Improvements - IMPLEMENTED ✓
 - **Secret Key**: Changed from `os.urandom()` (changes on restart) to environment variable ✓
-- **Admin Password**: Changed from hardcoded `admin123` to secure random generation ✓
-- **Password shown in console on first startup** with warning to change immediately ✓
+- **Admin Password**: *Claimed* changed from hardcoded `admin123` to secure random generation —
+  **was incomplete** until P0 (intelligence model seed + README still had `admin123`).
+  **Now:** `SHADOWSEYE_ADMIN_PASSWORD` or one-time generate + print ✓
+- **Password shown in console on first startup** when generated (env-supplied password is not printed) ✓
 
 ### 4. Advanced Tools Unlocked - EXPANDED ✓
 **Kali Tool Whitelist expanded from 10 to 30+ tools:**

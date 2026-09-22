@@ -1,5 +1,8 @@
 # Sentinel Core - Installation & Setup Guide
 
+> **Authorized use only.** Lab / defender inventory for assets you own or have
+> written permission to assess. Not a chaos or attack toolkit.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -32,9 +35,11 @@
    ```
 
 5. **Access the application**
-   - Open browser: `http://localhost:5000`
-   - Default admin credentials will be shown in console on first run
-   - **IMPORTANT**: Change the admin password immediately!
+   - Open browser: `http://localhost:5000` (or the port printed by `app.py`, often `5001`)
+   - Username: `admin`
+   - Password: set `SHADOWSEYE_ADMIN_PASSWORD` before first boot, **or** read the
+     one-time generated password printed to the console (no committed default)
+   - **IMPORTANT**: Change the admin password immediately after first login
 
 ## 🔑 Required API Keys
 
@@ -75,7 +80,7 @@ sudo apt install -y nmap amass subfinder theharvester dnsrecon \
 
 ## 🔒 Security Best Practices
 
-1. **Change default admin password immediately**
+1. **Set `SHADOWSEYE_ADMIN_PASSWORD` (or capture the generated one) and change it after first login**
 2. **Use strong SECRET_KEY in production**
 3. **Enable HTTPS in production**
 4. **Restrict network access**

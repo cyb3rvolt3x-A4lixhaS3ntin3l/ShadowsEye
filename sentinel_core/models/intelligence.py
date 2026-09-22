@@ -211,13 +211,34 @@ def init_db():
     with app.app_context():
         db.create_all()
         
-        # Create default admin user if not exists
+        # Create default admin user if not exists.
+        # Never seed a known default password — require env or one-time generate.
         admin = User.query.filter_by(username='admin').first()
         if not admin:
+            import secrets
+            initial_password = os.environ.get('SHADOWSEYE_ADMIN_PASSWORD')
+            generated = False
+            if not initial_password:
+                initial_password = secrets.token_urlsafe(16)
+                generated = True
             admin = User(username='admin', role='admin')
-            admin.set_password('admin123')
+            admin.set_password(initial_password)
             db.session.add(admin)
             db.session.commit()
+            if generated:
+                print(
+                    "\n*** FIRST BOOT: admin password was auto-generated ***\n"
+                    "    Username: admin\n"
+                    f"    Password: {initial_password}\n"
+                    "    Set SHADOWSEYE_ADMIN_PASSWORD to supply your own on first boot.\n"
+                    "    Change immediately after login. Never commit this value.\n"
+                )
+            else:
+                print(
+                    "\n*** FIRST BOOT: admin user created from SHADOWSEYE_ADMIN_PASSWORD ***\n"
+                    "    Username: admin\n"
+                    "    Password: (taken from environment — not printed)\n"
+                )
             
         # Seed default playbooks
         seed_playbooks()

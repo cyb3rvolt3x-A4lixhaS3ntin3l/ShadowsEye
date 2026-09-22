@@ -5,14 +5,17 @@
 > integrations). It is demoted for now: keep for maintainers who need the
 > dashboard; do not treat it as the primary entry. See root `README.md`.
 >
-> Default credentials below are for **local lab only** — change before any shared deployment.
+> **Authorized use only.** Use only on systems you own or have written permission
+> to assess. This is a lab / defender inventory UI — not a chaos or attack toolkit.
 
 ---
 
-# 🛡️ Sentinel Core - Elite Cybersecurity Intelligence Platform
+# 🛡️ Sentinel Core — cybersecurity intelligence platform (optional UI)
 
 ## Overview
-Sentinel Core is a professional-grade cybersecurity intelligence platform featuring real security tools, AI-powered analysis via NVIDIA NIM (Kimi AI), and an elite glassmorphism UI.
+Sentinel Core is an optional dashboard around authorized recon and OSINT modules,
+with AI-assisted analysis via NVIDIA NIM (Kimi) and a glassmorphism UI. Prefer the
+root CLI for strangers and lab demos.
 
 ## Features
 
@@ -25,7 +28,7 @@ Sentinel Core is a professional-grade cybersecurity intelligence platform featur
 ### 🧠 Kimi AI Integration (NVIDIA NIM)
 - Direct integration with `https://integrate.api.nvidia.com/v1/chat/completions`
 - Model: `moonshotai/kimi-k2.5`
-- 12 Elite AI Roles: IB, Mossad, RAW, Red Team, Blue Team, Threat Hunter, etc.
+- AI roles (authorized analysis personas): IB, Mossad, RAW, Red Team, Blue Team, Threat Hunter, etc.
 - Context-aware prompts with case data injection
 - Agentic mode for automated tool chaining
 
@@ -53,7 +56,7 @@ Sentinel Core is a professional-grade cybersecurity intelligence platform featur
 - Email Breach Check
 - File Hash Analysis
 
-### 🎨 Elite Professional UI
+### 🎨 UI
 - **Framework:** Custom CSS with Glassmorphism
 - **Design:** Neon accents, Inter font, dark theme
 - **Navigation:** Collapsible sidebar with active state tracking
@@ -79,9 +82,14 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## Default Credentials
-- **Username:** admin
-- **Password:** admin123
+## Admin credentials (first boot)
+
+There is **no** committed default password.
+
+- **Username:** `admin`
+- **Password:** set `SHADOWSEYE_ADMIN_PASSWORD` in the environment before first boot,
+  **or** leave it unset and read the one-time generated password printed to the console
+  on first startup. Change it immediately after login. Never commit a known password.
 
 ## Configuration
 1. Navigate to Settings page
@@ -110,7 +118,7 @@ sentinel_core/
 ├── templates/          # HTML templates
 ├── static/
 │   ├── css/
-│   │   └── style.css   # Elite UI styles
+│   │   └── style.css   # UI styles
 │   └── js/
 │       └── app.js      # Frontend JavaScript
 └── logs/               # Audit logs
@@ -124,4 +132,4 @@ sentinel_core/
 - API keys stored securely in settings.json
 
 ## License
-Proprietary - For authorized security testing only
+Proprietary — authorized security testing / lab use only. Unauthorized scanning is out of scope.

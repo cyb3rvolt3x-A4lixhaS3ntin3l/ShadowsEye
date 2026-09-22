@@ -143,6 +143,7 @@ class ShadowEyeLauncher:
         """Full system launch sequence"""
         print("=" * 60)
         print("🛡️  SENTINEL CORE - ShadowEye Launcher")
+        print("    Authorized use only — scoped assets / written permission.")
         print("=" * 60)
         
         # Step 1: Directories

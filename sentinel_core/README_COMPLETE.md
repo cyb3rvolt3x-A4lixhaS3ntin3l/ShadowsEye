@@ -1,4 +1,9 @@
-# 🛡️ Sentinel Core - Elite Cybersecurity Intelligence Platform
+# 🛡️ Sentinel Core — cybersecurity intelligence platform (optional UI)
+
+> **Authorized use only.** Lab / defender inventory for assets you own or have
+> written permission to assess. Not a chaos, malevolent, or attack toolkit.
+> Product CLI for strangers: repository-root `shadowseye.py`.
+
 
 **Complete, Production-Ready OSINT & Security Assessment Platform with Kimi AI Integration**
 
@@ -44,7 +49,7 @@ Sentinel Core is an **elite cybersecurity intelligence platform** that combines:
 
 **Model:** `moonshotai/kimi-k2.5` via `https://integrate.api.nvidia.com/v1/chat/completions`
 
-#### 12 Elite AI Roles:
+#### AI roles (authorized analysis personas):
 1. **Ethical Hacker** - Penetration testing expert
 2. **Incident Responder** - DFIR specialist
 3. **OSINT Specialist** - Open-source intelligence analyst
@@ -131,7 +136,7 @@ Steps:
   5. Wayback Machine (60s)
 ```
 
-#### 3. NETWORK_EXTERNAL (Elite Pentester Techniques)
+#### 3. NETWORK_EXTERNAL (external assessment techniques)
 ```yaml
 Steps:
   1. Nmap Scan (-sS -sV -O) (300s)
@@ -204,11 +209,11 @@ python3 app.py
 
 **Access:** http://localhost:5001
 
-**Default Credentials:**
+**Admin credentials (first boot):**
 - Username: `admin`
-- Password: `admin123`
-
-⚠️ **Change default password immediately!**
+- Password: set env `SHADOWSEYE_ADMIN_PASSWORD` **or** use the one-time password
+  printed to the console on first boot (no committed default).
+- Change it immediately after login. Never commit a known password.
 
 ---
 
@@ -217,7 +222,7 @@ python3 app.py
 ```
 sentinel_core/
 ├── app.py                      # Main Flask application (1400+ lines)
-├── shadowseye.py               # Elite launcher & module registry
+├── shadowseye.py               # Launcher & module registry
 ├── requirements.txt            # Python dependencies
 ├── README.md                   # This file
 │
@@ -267,7 +272,7 @@ sentinel_core/
 │
 ├── static/
 │   ├── css/
-│   │   └── style.css           # Elite UI styles (Glassmorphism)
+│   │   └── style.css           # UI styles (Glassmorphism)
 │   └── js/
 │       └── app.js              # Frontend JavaScript
 │
@@ -284,7 +289,7 @@ sentinel_core/
 
 ## 🎨 UI Features
 
-### Elite Professional Design
+### Professional Design
 - **Framework:** Custom CSS with Glassmorphism effects
 - **Theme:** Dark mode with Neon accents (Blue #00f0ff, Purple #bd00ff, Green #00ff88)
 - **Font:** Inter font family throughout
@@ -547,9 +552,9 @@ rm db/sentinel.db-shm db/sentinel.db-wal
 
 ## 📄 License
 
-**Proprietary** - For authorized security testing only.
+**Proprietary** — authorized security testing / lab use only.
 
-⚠️ **Legal Notice:** Only use this tool on systems you have explicit permission to test. Unauthorized access is illegal.
+⚠️ **Legal notice:** Only use this on systems you own or have explicit written permission to assess. Unauthorized access and scanning are illegal and out of scope.
 
 ---
 
@@ -583,7 +588,7 @@ This is a private project. For questions or support, contact the development tea
 
 <div align="center">
 
-### 🛡️ Sentinel Core - Elite Cybersecurity Intelligence Platform
+### 🛡️ Sentinel Core — cybersecurity intelligence platform
 
 *Real Tools. Real Results. No Simulation.*
 
